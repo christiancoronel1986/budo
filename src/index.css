@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0; 
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    background-color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .resultado-wrapper {
+    background: white !important;
+    min-height: unset !important;
+  }
+  .resultado-content {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Base setup for judge scorecards (3x3 grid per page) */
+.hoja-impresion-carta {
+  width: 215.9mm;
+  height: 279.4mm;
+  padding: 8mm;
+  margin: 0 auto;
+  background: white;
+  page-break-after: always;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  box-sizing: border-box;
+}
+
+/* Base setup for result cards (2 per page, stacked vertically) */
+.hoja-resultado-carta {
+  width: 215.9mm;
+  height: 279.4mm;
+  padding: 12mm;
+  margin: 0 auto;
+  background: white;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  gap: 10mm;
+  box-sizing: border-box;
+}
+
+@media screen {
+  /* En pantalla, agregamos estilos para previsualizar como hoja física la hoja de impresion */
+  .impresion-preview-wrapper {
+    background-color: #525659;
+    padding: 2rem 0;
+    min-height: 100vh;
+  }
+  .hoja-impresion-carta {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 2rem;
+  }
+  .hoja-resultado-carta {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 2rem;
+  }
+}
+
