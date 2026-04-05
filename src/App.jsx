@@ -527,7 +527,7 @@ function App() {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Panel Izquierdo: General */}
             <div className="bg-[#f8f9fa] border border-[#e1e8f0] p-5 rounded-md shadow-sm">
-               <h3 className="text-[13px] uppercase text-[#888] font-bold tracking-widest mb-3 flex items-center gap-2"><span className="text-lg">📋</span> Datos Generales</h3>
+               <h3 className="text-[13px] uppercase text-[#888] font-bold tracking-widest mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-lg">assignment</span> Datos Generales</h3>
                <ul className="text-[15px] text-[#333] space-y-2 list-none p-0 m-0">
                   <li><strong>Nombre:</strong> {formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}`: ''}</li>
                   <li><strong>Disciplina:</strong> {formData.disciplina || 'Varias'}</li>
@@ -538,7 +538,7 @@ function App() {
 
             {/* Panel Derecho: Logos */}
             <div className="bg-[#f8f9fa] border border-[#e1e8f0] p-5 rounded-md shadow-sm">
-               <h3 className="text-[13px] uppercase text-[#888] font-bold tracking-widest mb-3 flex items-center gap-2"><span className="text-lg">🖼️</span> Elementos Gráficos</h3>
+               <h3 className="text-[13px] uppercase text-[#888] font-bold tracking-widest mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-lg">image</span> Elementos Gráficos</h3>
                <div className="flex gap-4 items-start">
                   <div className="flex flex-col items-center gap-1">
                      <span className="text-xs font-bold text-[#555]">LOGO 1</span>
@@ -561,7 +561,7 @@ function App() {
          {/* Panel Completo: Cartelera Extendida */}
          <div className="bg-white border text-center sm:text-left border-[#e1e8f0] rounded-md shadow-sm overflow-hidden mb-8">
             <div className="bg-[#b91d22] text-white px-5 py-3 flex justify-between items-center flex-wrap gap-2">
-               <h3 className="text-sm font-bold uppercase tracking-wider m-0">🔥 Cartelera de Combates</h3>
+               <h3 className="text-sm font-bold uppercase tracking-wider m-0 flex items-center gap-2"><span className="material-symbols-outlined text-base">local_fire_department</span> Cartelera de Combates</h3>
                <span className="bg-white text-[#b91d22] text-xs font-bold px-2 py-1 rounded-sm">{totalPeleasAbsolutas} Combates en Total</span>
             </div>
             
@@ -571,7 +571,7 @@ function App() {
                   return (
                      <div key={`resumen-cat-${gIdx}`} className="border-b border-[#eee] last:border-0">
                         <div className="bg-[#fcfcfc] px-4 py-2 border-b border-[#eee] flex items-center justify-between">
-                            <h4 className="m-0 text-[#444] text-[13px] font-bold uppercase tracking-wide">🏆 Categoría: {grupo[0].tipo_pelea}</h4>
+                            <h4 className="m-0 text-[#444] text-[13px] font-bold uppercase tracking-wide flex items-center gap-2"><span className="material-symbols-outlined text-sm">emoji_events</span> Categoría: {grupo[0].tipo_pelea}</h4>
                             <span className="text-xs font-semibold text-gray-500">{grupo.length} Peleas</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-0">
@@ -898,7 +898,7 @@ function App() {
                </div>
                <div className="flex gap-3 shrink-0">
                   <button onClick={() => setIsPrintMode(false)} className="bg-gray-600 hover:bg-gray-500 px-5 py-2 rounded text-sm font-bold text-white transition-colors cursor-pointer border-none">Volver</button>
-                  <button onClick={() => window.print()} className="bg-[#b91d22] hover:bg-[#a0181d] px-6 py-2 rounded text-sm font-bold text-white transition-colors shadow-lg cursor-pointer border-none flex items-center gap-2">🖨️ IMPRIMIR AHORA</button>
+                  <button onClick={() => window.print()} className="bg-[#b91d22] hover:bg-[#a0181d] px-6 py-2 rounded text-sm font-bold text-white transition-colors shadow-lg cursor-pointer border-none flex items-center gap-2"><span className="material-symbols-outlined text-base">print</span> IMPRIMIR AHORA</button>
                </div>
             </div>
             
@@ -1026,7 +1026,7 @@ function App() {
              </button>
              <h2 style={{margin: 0, fontSize: '18px', fontWeight: '900', letterSpacing: '0.1em', color: '#ef4444', textTransform: 'uppercase'}}>Tarjetas de Resultado</h2>
              <button onClick={() => window.print()} style={{background: '#dc2626', border: 'none', color: 'white', padding: '8px 32px', borderRadius: '6px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '13px', boxShadow: '0 4px 0 #991b1b'}}>
-                🖨️ Imprimir Ahora
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'}}><span className="material-symbols-outlined" style={{fontSize: '18px'}}>print</span> Imprimir Ahora</div>
              </button>
           </div>
           <div className="resultado-content" style={{paddingTop: '100px', paddingBottom: '40px'}}>
@@ -1065,13 +1065,13 @@ function App() {
               
               <div className="flex flex-col gap-4 items-center w-full max-w-[350px]">
                  <button type="button" onClick={() => setIsPrintMode(true)} className="w-full bg-[#3a475a] hover:bg-[#2a3442] border-none text-white py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors shadow-sm cursor-pointer">
-                    🖨️ Generar y previsualizar Tarjetas de Jueces
+                    <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">print</span> Generar y previsualizar Tarjetas de Jueces</div>
                  </button>
                  <button type="button" onClick={() => setIsResultMode(true)} className="w-full bg-[#b91d22] hover:bg-[#96181b] border-none text-white py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors shadow-[0_4px_0_rgb(130,20,24)] active:translate-y-1 active:shadow-none cursor-pointer">
-                    🏆 Generar Tarjetas de Resultados
+                    <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">emoji_events</span> Generar Tarjetas de Resultados</div>
                  </button>
                  <button type="button" onClick={resetFormulario} className="w-full bg-white border border-[#ccc] hover:bg-gray-50 text-[#333] py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors cursor-pointer">
-                    ✚ Capturar un Evento Nuevo
+                    <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">add</span> Capturar un Evento Nuevo</div>
                  </button>
               </div>
            </div>
@@ -1093,9 +1093,9 @@ function App() {
                      </div>
                   ) : isDeletingNombre ? (
                      <div className="flex flex-col bg-white border border-red-400 rounded-md max-h-40 relative">
-                        <div className="bg-red-50 p-2 border-b border-red-200 flex justify-between items-center text-xs text-red-700 font-bold"><span>Hacer clic para borrar:</span> <button type="button" onClick={() => setIsDeletingNombre(false)}>X</button> </div>
+                        <div className="bg-red-50 p-2 border-b border-red-200 flex justify-between items-center text-xs text-red-700 font-bold"><span>Hacer clic para borrar:</span> <button type="button" onClick={() => setIsDeletingNombre(false)} className="flex items-center"><span className="material-symbols-outlined text-[16px]">close</span></button> </div>
                         <div className="overflow-y-auto w-full">
-                           {nombresEventos.map((n) => (<button key={n.id} type="button" onClick={() => executeDeleteNombre(n.nombre)} className="w-full text-left p-2 hover:bg-red-100 border-b border-gray-100 last:border-0 cursor-pointer text-sm">❌ {n.nombre}</button>))}
+                           {nombresEventos.map((n) => (<button key={n.id} type="button" onClick={() => executeDeleteNombre(n.nombre)} className="w-full text-left p-2 hover:bg-red-100 border-b border-gray-100 last:border-0 cursor-pointer text-sm flex items-center justify-between"><span className="flex-1">{n.nombre}</span><span className="material-symbols-outlined text-[16px] text-red-500">close</span></button>))}
                         </div>
                      </div>
                   ) : (
@@ -1105,7 +1105,7 @@ function App() {
                            {nombresEventos.map((n) => (<option key={n.id} value={n.nombre}>{n.nombre}</option>))}
                         </select>
                         <button type="button" onClick={() => { setIsAddingNombre(true); setIsDeletingNombre(false); }} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-[#333] flex justify-center items-center text-lg hover:bg-gray-50">+</button>
-                        <button type="button" onClick={() => setIsDeletingNombre(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center text-lg hover:bg-red-50">🗑️</button>
+                        <button type="button" onClick={() => setIsDeletingNombre(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center hover:bg-red-50"><span className="material-symbols-outlined text-xl">delete</span></button>
                      </div>
                   )}
                </div>
@@ -1120,9 +1120,9 @@ function App() {
                      </div>
                   ) : isDeletingCiudad ? (
                      <div className="flex flex-col bg-white border border-red-400 rounded-md max-h-40 relative">
-                        <div className="bg-red-50 p-2 border-b border-red-200 flex justify-between items-center text-xs text-red-700 font-bold"><span>Hacer clic para borrar:</span> <button type="button" onClick={() => setIsDeletingCiudad(false)}>X</button> </div>
+                        <div className="bg-red-50 p-2 border-b border-red-200 flex justify-between items-center text-xs text-red-700 font-bold"><span>Hacer clic para borrar:</span> <button type="button" onClick={() => setIsDeletingCiudad(false)} className="flex items-center"><span className="material-symbols-outlined text-[16px]">close</span></button> </div>
                         <div className="overflow-y-auto w-full">
-                           {ciudades.map((c) => (<button key={c.id} type="button" onClick={() => executeDeleteCiudad(c.nombre)} className="w-full text-left p-2 hover:bg-red-100 border-b border-gray-100 last:border-0 cursor-pointer text-sm">❌ {c.nombre}</button>))}
+                           {ciudades.map((c) => (<button key={c.id} type="button" onClick={() => executeDeleteCiudad(c.nombre)} className="w-full text-left p-2 hover:bg-red-100 border-b border-gray-100 last:border-0 cursor-pointer text-sm flex items-center justify-between"><span className="flex-1">{c.nombre}</span><span className="material-symbols-outlined text-[16px] text-red-500">close</span></button>))}
                         </div>
                      </div>
                   ) : (
@@ -1132,7 +1132,7 @@ function App() {
                            {ciudades.map((c) => (<option key={c.id} value={c.nombre}>{c.nombre}</option>))}
                         </select>
                         <button type="button" onClick={() => { setIsAddingCiudad(true); setIsDeletingCiudad(false); }} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-[#333] flex justify-center items-center text-lg hover:bg-gray-50">+</button>
-                        <button type="button" onClick={() => setIsDeletingCiudad(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center text-lg hover:bg-red-50">🗑️</button>
+                        <button type="button" onClick={() => setIsDeletingCiudad(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center hover:bg-red-50"><span className="material-symbols-outlined text-xl">delete</span></button>
                      </div>
                   )}
                </div>
@@ -1209,7 +1209,7 @@ function App() {
             <div className="mb-6">
                <div className="mb-4">
                   <h3 className="text-lg font-bold text-[#b91d22] m-0 flex items-center gap-2">
-                     <span className="bg-[#b91d22] text-white w-6 h-6 rounded-full flex justify-center items-center text-[12px] shadow-sm">🥊</span> 
+                     <span className="bg-[#b91d22] text-white w-6 h-6 rounded-full flex justify-center items-center text-[12px] shadow-sm"><span className="material-symbols-outlined text-[14px]">sports_mma</span></span> 
                      Estructura y Tipos de Peleas
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">Crea bloques de combates. Escribe el Tipo (ej. <i>Amateur 60kg</i>, <i>Profesional</i>) e ingresa cuántas peleas son.</p>
@@ -1223,7 +1223,7 @@ function App() {
                         
                         {/* Botón borrar fila solo si hay más de 1 categoría */}
                         {categorias.length > 1 ? (
-                           <button type="button" onClick={() => removeCategoria(idx)} className="w-[38px] h-[38px] text-red-500 border border-red-200 hover:bg-red-50 rounded bg-white flex justify-center items-center text-lg" title="Quitar Categoría">X</button>
+                           <button type="button" onClick={() => removeCategoria(idx)} className="w-[38px] h-[38px] text-red-500 border border-red-200 hover:bg-red-50 rounded bg-white flex justify-center items-center" title="Quitar Categoría"><span className="material-symbols-outlined text-xl">close</span></button>
                         ) : (
                            <div className="w-[38px]"></div> // Spacer visual 
                         )}
