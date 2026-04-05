@@ -1149,7 +1149,7 @@ function App() {
                    <input name="disciplina" value={formData.disciplina} onChange={handleChange1} type="text" placeholder="Ej. Box, MMA, Karate" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white" required />
                 </div>
                 <div>
-                   <label className="block text-sm font-semibold text-[#111] mb-2">Fecha del Torneo *</label>
+                   <label className="block text-sm font-semibold text-[#111] mb-2">Fecha *</label>
                    <input name="fecha" value={formData.fecha} onChange={handleChange1} type="date" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white cursor-pointer" required />
                 </div>
              </div>
