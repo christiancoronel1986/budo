@@ -1374,7 +1374,7 @@ function App() {
           <div className="p-10 text-center py-16 bg-white flex flex-col items-center">
             <div className="w-20 h-20 bg-[#f0f9f3] text-green-600 rounded-full flex items-center justify-center mb-6 text-3xl font-black border border-green-200">✓</div>
             <h2 className="text-2xl font-black text-[#111] mb-2 uppercase">¡Registro Terminado!</h2>
-            <p className="text-gray-500 mb-10 max-w-sm">Ahora puedes imprimir las Cartas de Jueces para este evento organizado.</p>
+            <p className="text-gray-500 mb-10 max-w-sm">Ahora puedes generar las Tarjetas de Jueces para este evento organizado.</p>
 
             <div className="flex flex-col gap-4 items-center w-full max-w-[350px]">
               <button type="button" onClick={() => setIsPrintMode(true)} className="w-full bg-[#3a475a] hover:bg-[#2a3442] border-none text-white py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors shadow-sm cursor-pointer">
@@ -1390,7 +1390,7 @@ function App() {
                 <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">checklist</span> Generar Lista de Chequeo</div>
               </button>
               <button type="button" onClick={resetFormulario} className="w-full bg-white border border-[#ccc] hover:bg-gray-50 text-[#333] py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors cursor-pointer">
-                <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">add</span> Capturar un Evento Nuevo</div>
+                <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">add</span> Crear un Evento Nuevo</div>
               </button>
             </div>
           </div>
