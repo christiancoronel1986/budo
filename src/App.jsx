@@ -19,17 +19,19 @@ function App() {
   const showAlert = (message) => setConfirmDialog({ isOpen: true, message, onConfirm: null, isAlert: true })
   const showConfirm = (message, onConfirm) => setConfirmDialog({ isOpen: true, message, onConfirm, isAlert: false })
 
+  const hoy = new Date().toLocaleDateString('en-CA')
+
   // --------- ESTADOS STEP 1: EVENTO ---------
   const [formData, setFormData] = useState({
     nombre_evento: '',
     numero_evento: '',
     disciplina: '',
-    fecha: '2026-04-04',
+    fecha: hoy,
     ciudad: ''
   })
 
   // Híbrido de Logo 1
-  const [logoMode, setLogoMode] = useState('url') // 'url' or 'file'
+  const [logoMode, setLogoMode] = useState('url') 
   const [logoFile, setLogoFile] = useState(null)
   const [logoUrlInput, setLogoUrlInput] = useState('')
 
@@ -55,6 +57,8 @@ function App() {
   const [isDeletingNombre, setIsDeletingNombre] = useState(false)
   const [nuevoNombreInput, setNuevoNombreInput] = useState('')
   const [isSavingNombre, setIsSavingNombre] = useState(false)
+  const [formErrors, setFormErrors] = useState([]) // Array de IDs de campos con error
+  const [tooltipField, setTooltipField] = useState(null) // Campo que muestra el tooltip de advertencia
 
   const [isAddingCiudad, setIsAddingCiudad] = useState(false)
   const [isDeletingCiudad, setIsDeletingCiudad] = useState(false)
@@ -174,6 +178,11 @@ function App() {
     let { name, value } = e.target
     if (name === 'disciplina') value = value.toUpperCase()
     setFormData(prev => ({ ...prev, [name]: value }))
+    // Limpiar error visual y tooltip al escribir
+    if (formErrors.includes(name)) {
+      setFormErrors(prev => prev.filter(f => f !== name))
+    }
+    if (tooltipField === name) setTooltipField(null)
   }
 
   // Lógica de Categorías Step 1
@@ -184,14 +193,65 @@ function App() {
     if (field === 'tipo') val = val.toUpperCase()
     newCats[idx][field] = val
     setCategorias(newCats)
+    // Limpiar error visual de categorías
+    if (formErrors.includes('categories')) {
+      setFormErrors(prev => prev.filter(f => f !== 'categories'))
+    }
+    if (tooltipField === 'categories') setTooltipField(null)
   }
 
   const proceedFromStep1 = (e) => {
     e.preventDefault()
 
+    // 1. Validar Datos Básicos y Logo (Campos Obligatorios)
+    const logoInvalido = (logoMode === 'url' && !logoUrlInput.trim()) || (logoMode === 'file' && !logoFile);
+    
+    // Lista de campos que faltan
+    const errors = [];
+    if (!formData.nombre_evento.trim()) errors.push('nombre_evento');
+    if (!formData.ciudad.trim()) errors.push('ciudad');
+    if (!formData.disciplina.trim()) errors.push('disciplina');
+    if (!formData.fecha) errors.push('fecha');
+    if (logoInvalido) errors.push('logo');
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      setTooltipField(errors[0]);
+      
+      // Auto-focus al primer error
+      setTimeout(() => {
+        const first = errors[0];
+        let el = null;
+        if (first === 'logo') {
+          el = logoMode === 'url' ? document.getElementById('input-logo-url') : document.getElementById('logo-upload');
+        } else {
+          el = document.getElementById(`input-${first}`);
+        }
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.focus();
+        }
+      }, 100);
+      return;
+    }
+    
+    // Si llegamos aquí todo lo básico está bien
+    setFormErrors([]);
+    setTooltipField(null);
+
     const categoriasValidas = categorias.filter(c => c.tipo.trim() !== '' && parseInt(c.cant) > 0);
     if (categoriasValidas.length === 0) {
-      showAlert("Por favor, llena correctamente al menos una Categoría de Pelea con valores válidos.");
+      setFormErrors(prev => [...prev, 'categories']);
+      setTooltipField('categories');
+      
+      // Focus al primer campo de categoría
+      setTimeout(() => {
+        const el = document.getElementById('input-cat-tipo-0');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.focus();
+        }
+      }, 100);
       return;
     }
 
@@ -261,26 +321,31 @@ function App() {
       let finalLogo2Url = null
       let finalWatermarkUrl = null
 
-      if (watermarkMode === 'url' && watermarkUrlInput.trim()) {
+      // 1. Marca de Agua
+      if (watermarkMode === 'cramm') {
+        finalWatermarkUrl = '/logo_cramm.png'
+      } else if (watermarkMode === 'url' && watermarkUrlInput.trim()) {
         finalWatermarkUrl = watermarkUrlInput.trim()
       } else if (watermarkMode === 'file' && watermarkFile) {
-        setStatus({ type: 'loading', message: 'Subiendo marca de agua a la Nube...' })
+        setStatus({ type: 'loading', message: 'Subiendo marca de agua...' })
         const fileExt = watermarkFile.name.split('.').pop()
         const fileName = `watermark_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${fileName}`
 
         const { error: uploadError } = await supabase.storage.from('logos').upload(filePath, watermarkFile)
-        if (uploadError) throw new Error('Error al subir la marca de agua al Storage: ' + uploadError.message)
+        if (uploadError) throw new Error('Error al subir la marca de agua: ' + uploadError.message)
 
         const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filePath)
         finalWatermarkUrl = publicUrlData.publicUrl
       }
 
-      if (logoMode === 'url' && logoUrlInput.trim()) {
+      // 2. Logo 1 (Principal)
+      if (logoMode === 'cramm') {
+        finalLogoUrl = '/logo_cramm.png'
+      } else if (logoMode === 'url' && logoUrlInput.trim()) {
         finalLogoUrl = logoUrlInput.trim()
       } else if (logoMode === 'file' && logoFile) {
-        setStatus({ type: 'loading', message: 'Procesando archivos...' })
-        // Crear nombre único para evitar colisiones
+        setStatus({ type: 'loading', message: 'Subiendo logo principal...' })
         const fileExt = logoFile.name.split('.').pop()
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${fileName}`
@@ -405,12 +470,14 @@ function App() {
     setIsChecklistMode(false)
     setPrintDesign(1)
     setStatus({ type: '', message: '' })
-    setFormData({ nombre_evento: '', numero_evento: '', disciplina: '', fecha: '2026-04-04', ciudad: '' })
+    const hoy = new Date().toLocaleDateString('en-CA')
+    setFormData({ nombre_evento: '', numero_evento: '', disciplina: '', fecha: hoy, ciudad: '' })
     setLogoFile(null); setLogoUrlInput(''); setLogoMode('url');
     setLogo2File(null); setLogo2UrlInput(''); setLogo2Mode('url');
     setWatermarkFile(null); setWatermarkUrlInput(''); setWatermarkMode('url');
     setCategorias([{ id: Date.now(), tipo: '', cant: 1 }])
     setFightFormsData([])
+    setFormErrors([])
     setCurrentStep(1)
   }
 
@@ -419,6 +486,19 @@ function App() {
   // ==========================================
 
   // --- RENDERIZADOR MAGISTRAL DINÁMICO ---
+  // Componente Tooltip de Validación
+  const ValidationTooltip = ({ message }) => (
+    <div className="absolute top-[calc(100%+8px)] left-2 z-[90] animate-in fade-in slide-in-from-top-1 duration-200">
+      <div className="relative bg-white border border-gray-200 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.15)] py-2.5 px-4 flex items-center gap-3">
+        {/* Triangulito */}
+        <div className="absolute -top-1.5 left-4 w-3 h-3 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+        {/* Icono Exclamación Naranja */}
+        <div className="bg-[#ff9800] rounded-sm w-5 h-5 min-w-[20px] flex items-center justify-center text-white font-bold text-xs shadow-sm">!</div>
+        <span className="text-[#333] text-[13px] font-medium whitespace-nowrap">{message}</span>
+      </div>
+    </div>
+  );
+
   const renderPeleasPaso = () => {
     // Calculamos qué grupo de categoría deberíamos renderizar basado en nuestro Step mágico.
     // Step 2 => Indice Grupo 0
@@ -438,10 +518,13 @@ function App() {
 
         {/* Cabecera Resumen parecida a la imagen enviada */}
         <div className="mb-6 p-4 sm:p-5 bg-[#f8f9fa] border border-[#e1e8f0] rounded-md">
-          <p className="m-0 text-[#111] font-medium leading-relaxed">
-            <span className="font-bold uppercase">{formData.nombre_evento}</span>{formData.numero_evento && `: ${formData.numero_evento}`}<br />
-            Fecha: {formData.fecha} | Ciudad: {formData.ciudad} | Disciplina: {formData.disciplina || 'Varias'}<br />
-            Actualmente llenando tarjeta: <strong className="text-[#b91d22] uppercase">{nombreCategoria} ({arrayPeleasDelPaso.length} peleas)</strong>
+          <p className="m-0 text-[#111] font-medium leading-relaxed text-sm sm:text-base">
+            <span className="font-bold uppercase text-[#b91d22]">{formData.nombre_evento}</span>{formData.numero_evento && `: ${formData.numero_evento}`}<br />
+            Fecha: {formData.fecha ? (() => {
+                const [y, m, d] = formData.fecha.split('-');
+                return `${m}-${d}-${y}`;
+              })() : ''} | Sede: {formData.ciudad} | Disciplina: {formData.disciplina || 'Varias'}<br />
+            Actualmente llenando tarjeta: <strong className="text-[#b91d22] uppercase">{nombreCategoria}</strong> ({arrayPeleasDelPaso.length} {arrayPeleasDelPaso.length === 1 ? 'pelea' : 'peleas'})
           </p>
         </div>
 
@@ -584,8 +667,8 @@ function App() {
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-[#555]">LOGO 1</span>
                 <div className="w-[80px] h-[80px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
-                  {(logoMode === 'url' && logoUrlInput) || (logoMode === 'file' && logoFile) ?
-                    <img src={logoMode === 'url' ? logoUrlInput : URL.createObjectURL(logoFile)} alt="L1" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
+                  {(logoMode === 'cramm' || (logoMode === 'url' && logoUrlInput) || (logoMode === 'file' && logoFile)) ?
+                    <img src={logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : URL.createObjectURL(logoFile))} alt="L1" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1">
@@ -598,8 +681,8 @@ function App() {
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-[#555]">MARCA DE AGUA</span>
                 <div className="w-[80px] h-[80px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
-                  {(watermarkMode === 'url' && watermarkUrlInput) || (watermarkMode === 'file' && watermarkFile) ?
-                    <img src={watermarkMode === 'url' ? watermarkUrlInput : URL.createObjectURL(watermarkFile)} alt="Watermark" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
+                  {(watermarkMode === 'cramm' || (watermarkMode === 'url' && watermarkUrlInput) || (watermarkMode === 'file' && watermarkFile)) ?
+                    <img src={watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : URL.createObjectURL(watermarkFile))} alt="Watermark" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
                 </div>
               </div>
             </div>
@@ -684,9 +767,9 @@ function App() {
     const totalPaginas = Math.ceil(flattenPeleas.length / 9) || 1;
     const hojasHTML = [];
 
-    const logo1UrlFinal = logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null);
+    const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
-    const watermarkUrlFinal = watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null);
+    const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
     const hasLogos = logo1UrlFinal || logo2UrlFinal;
 
     const formatearFecha = (fechaISO) => {
@@ -902,20 +985,18 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="flex-1 mt-2 flex flex-col justify-center">
-                      <div className="grid grid-cols-[1fr_26px_1fr] gap-y-2 gap-x-2 items-center">
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                          {[1, 2, 3, 4, 5].map((_, i) => <div key={i} className={`border-[2px] border-black bg-white h-[16px] w-full print:-webkit-print-color-adjust: exact print:border-black ${i === 4 ? 'mt-1 shadow-[2px_2px_0px_#000]' : ''}`}></div>)}
+                    <div className="flex-1 mt-2 flex flex-col justify-center gap-2 px-1">
+                      {['R1', 'R2', 'R3', 'R4'].map((r, i) => (
+                        <div key={i} className="grid grid-cols-[1fr_30px_1fr] gap-x-3 items-center">
+                          <div className="border-[2px] border-black bg-white h-[18px] w-full shadow-[1.5px_1.5px_0px_#000] print:border-black print:-webkit-print-color-adjust: exact"></div>
+                          <div className="h-[18px] bg-black text-white flex items-center justify-center rounded-sm text-[9px] font-black print:bg-black print:text-white print:-webkit-print-color-adjust: exact tracking-tighter">{r}</div>
+                          <div className="border-[2px] border-black bg-white h-[18px] w-full shadow-[1.5px_1.5px_0px_#000] print:border-black print:-webkit-print-color-adjust: exact"></div>
                         </div>
-                        <div className="flex flex-col gap-2 font-black text-[9px] text-black text-center print:text-black print:-webkit-print-color-adjust: exact mt-0.5">
-                          {['R1', 'R2', 'R3', 'R4'].map((r, i) => <div key={i} className="h-[16px] bg-black text-white flex items-center justify-center print:bg-black print:text-white print:-webkit-print-color-adjust: exact rounded-sm">{r}</div>)}
-                          <div className="h-[16px] bg-black text-white flex items-center justify-center print:bg-black print:text-white print:-webkit-print-color-adjust: exact rounded-sm mt-1 px-px">
-                            <span className="text-[5.5px] tracking-wide leading-none pt-px">TOTAL</span>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                          {[1, 2, 3, 4, 5].map((_, i) => <div key={i} className={`border-[2px] border-black bg-white h-[16px] w-full print:-webkit-print-color-adjust: exact print:border-black ${i === 4 ? 'mt-1 shadow-[2px_2px_0px_#000]' : ''}`}></div>)}
-                        </div>
+                      ))}
+                      <div className="grid grid-cols-[1fr_30px_1fr] gap-x-3 items-center mt-1">
+                        <div className="border-[2px] border-black bg-white h-[18px] w-full shadow-[2.5px_2.5px_0px_#000] print:border-black print:-webkit-print-color-adjust: exact"></div>
+                        <div className="h-[18px] bg-black text-white flex items-center justify-center rounded-sm text-[5px] font-black leading-none print:bg-black print:text-white print:-webkit-print-color-adjust: exact px-px">TOTAL</div>
+                        <div className="border-[2px] border-black bg-white h-[18px] w-full shadow-[2.5px_2.5px_0px_#000] print:border-black print:-webkit-print-color-adjust: exact"></div>
                       </div>
                     </div>
 
@@ -983,7 +1064,7 @@ function App() {
   }
   
   if (isChecklistMode) {
-    const logo1UrlFinal = logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null);
+    const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
 
     const flattenPeleas = [];
@@ -1102,9 +1183,9 @@ function App() {
   }
 
   if (isControlMode) {
-    const logo1UrlFinal = logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null);
+    const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
-    const watermarkUrlFinal = watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null);
+    const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
   
     const flattenPeleas = [];
     fightFormsData.forEach((grupoCategoria) => {
@@ -1221,9 +1302,9 @@ function App() {
   }
 
   if (isResultMode) {
-    const logo1UrlFinal = logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null);
+    const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
-    const watermarkUrlFinal = watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null);
+    const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
     const flattenPeleas = [];
     fightFormsData.forEach((grupoCategoria) => {
       grupoCategoria.forEach((pelea) => {
@@ -1397,13 +1478,13 @@ function App() {
         )}
         {/* STEP 1: FORMULARIO DEL EVENTO Y SU GENERADOR DE CATEGORIAS */}
         {!isSuccess && currentStep === 1 && (
-          <form className="p-5 sm:p-8 sm:px-10" onSubmit={proceedFromStep1} autoComplete="off">
+          <form className="p-5 sm:p-8 sm:px-10" onSubmit={proceedFromStep1} autoComplete="off" noValidate>
 
             {/* COMPACTAMOS EVENTO Y CIUDAD ARRIBA */}
             <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
               <div>
-                <label className="block text-sm font-semibold text-[#111] mb-2">Nombre del Evento *</label>
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide">Nombre del Evento *</label>
                 {isAddingNombre ? (
                   <div className="flex items-center gap-1">
                     <input type="text" value={nuevoNombreInput} onChange={(e) => setNuevoNombreInput(e.target.value)} placeholder="Ej. Budo Strike..." className="flex-grow p-2.5 text-sm border border-[#e1e8f0] rounded focus:outline-none" autoFocus autoComplete="off" />
@@ -1418,11 +1499,12 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-1 h-[42px]">
-                    <select name="nombre_evento" value={formData.nombre_evento} onChange={handleChange1} className="flex-grow p-2.5 text-sm border border-[#e1e8f0] rounded bg-white text-[#333] cursor-pointer" required>
+                  <div className="flex gap-1 h-[42px] relative">
+                    <select id="input-nombre_evento" name="nombre_evento" value={formData.nombre_evento} onChange={handleChange1} className={`flex-grow p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('nombre_evento') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
                       <option value="" disabled hidden>Seleccione evento</option>
                       {nombresEventos.map((n) => (<option key={n.id} value={n.nombre}>{n.nombre}</option>))}
                     </select>
+                    {tooltipField === 'nombre_evento' && <ValidationTooltip message="Completa este campo" />}
                     <button type="button" onClick={() => { setIsAddingNombre(true); setIsDeletingNombre(false); }} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-[#333] flex justify-center items-center text-lg hover:bg-gray-50">+</button>
                     <button type="button" onClick={() => setIsDeletingNombre(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center hover:bg-red-50"><span className="material-symbols-outlined text-xl">delete</span></button>
                   </div>
@@ -1430,10 +1512,10 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#111] mb-2">Ciudad *</label>
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide">Sede *</label>
                 {isAddingCiudad ? (
                   <div className="flex items-center gap-1">
-                    <input type="text" value={nuevaCiudadInput} onChange={(e) => setNuevaCiudadInput(e.target.value)} placeholder="Agrega Ciudad HQ" className="flex-grow p-2.5 text-sm border border-[#e1e8f0] rounded focus:outline-none" autoFocus autoComplete="off" />
+                    <input type="text" value={nuevaCiudadInput} onChange={(e) => setNuevaCiudadInput(e.target.value)} placeholder="Agregar Sede" className="flex-grow p-2.5 text-sm border border-[#e1e8f0] rounded focus:outline-none" autoFocus autoComplete="off" />
                     <button type="button" onClick={handleSaveNuevaCiudad} className="bg-green-600 hover:bg-green-700 text-white w-[42px] h-[42px] rounded flex justify-center items-center transition-colors"><span className="material-symbols-outlined text-[20px]">check</span></button>
                     <button type="button" onClick={() => { setIsAddingCiudad(false); setNuevaCiudadInput(''); }} className="bg-gray-500 hover:bg-gray-600 text-white w-[42px] h-[42px] rounded flex justify-center items-center transition-colors"><span className="material-symbols-outlined text-[20px]">close</span></button>
                   </div>
@@ -1445,11 +1527,12 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-1 h-[42px]">
-                    <select name="ciudad" value={formData.ciudad} onChange={handleChange1} className="flex-grow p-2.5 text-sm border border-[#e1e8f0] rounded bg-white text-[#333] cursor-pointer" required>
-                      <option value="" disabled hidden>Seleccione ciudad</option>
+                  <div className="flex gap-1 h-[42px] relative">
+                    <select id="input-ciudad" name="ciudad" value={formData.ciudad} onChange={handleChange1} className={`flex-grow p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('ciudad') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
+                      <option value="" disabled hidden>Seleccione sede</option>
                       {ciudades.map((c) => (<option key={c.id} value={c.nombre}>{c.nombre}</option>))}
                     </select>
+                    {tooltipField === 'ciudad' && <ValidationTooltip message="Completa este campo" />}
                     <button type="button" onClick={() => { setIsAddingCiudad(true); setIsDeletingCiudad(false); }} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-[#333] flex justify-center items-center text-lg hover:bg-gray-50">+</button>
                     <button type="button" onClick={() => setIsDeletingCiudad(true)} className="w-[42px] bg-white border border-[#e1e8f0] rounded text-red-500 flex justify-center items-center hover:bg-red-50"><span className="material-symbols-outlined text-xl">delete</span></button>
                   </div>
@@ -1464,12 +1547,18 @@ function App() {
                 <input name="numero_evento" value={formData.numero_evento} onChange={handleChange1} type="number" placeholder="Ej. 12" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white" min="0" autoComplete="off" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#111] mb-2">Disciplina *</label>
-                <input name="disciplina" value={formData.disciplina} onChange={handleChange1} type="text" placeholder="Ej. BOX, MMA, KARATE" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white uppercase" required autoComplete="off" />
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide">Disciplina *</label>
+                <div className="relative">
+                  <input id="input-disciplina" name="disciplina" value={formData.disciplina} onChange={handleChange1} type="text" placeholder="Ej. BOX, MMA, KARATE" className={`w-full p-2.5 text-sm border rounded bg-white uppercase ${formErrors.includes('disciplina') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required autoComplete="off" />
+                  {tooltipField === 'disciplina' && <ValidationTooltip message="Completa este campo" />}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#111] mb-2">Fecha *</label>
-                <input name="fecha" value={formData.fecha} onChange={handleChange1} type="date" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white cursor-pointer" required />
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide">Fecha *</label>
+                <div className="relative">
+                  <input id="input-fecha" name="fecha" value={formData.fecha} onChange={handleChange1} type="date" className={`w-full p-2.5 text-sm border rounded bg-white cursor-pointer ${formErrors.includes('fecha') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required />
+                  {tooltipField === 'fecha' && <ValidationTooltip message="Completa este campo" />}
+                </div>
               </div>
             </div>
 
@@ -1480,37 +1569,62 @@ function App() {
 
               {/* Logo 1 */}
               <div className="bg-[#f8f9fa] p-4 rounded border border-[#eee]">
-                <label className="block text-sm font-semibold text-[#111] mb-2">Logo Principal / Cartel (Opcional)</label>
-                <div className="flex gap-4 mb-3 border-b border-[#e1e8f0]">
-                  <button type="button" onClick={() => setLogoMode('url')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${logoMode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Pegar URL</button>
-                  <button type="button" onClick={() => setLogoMode('file')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${logoMode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Subir Archivo</button>
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide">Logo Principal *</label>
+                <div className="grid grid-cols-3 mb-3 border-b border-[#e1e8f0]">
+                  <button type="button" onClick={() => { setLogoMode('url'); if (formErrors.includes('logo')) setFormErrors(prev => prev.filter(f => f !== 'logo')); }} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logoMode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>PEGAR URL</button>
+                  <button type="button" onClick={() => { setLogoMode('file'); if (formErrors.includes('logo')) setFormErrors(prev => prev.filter(f => f !== 'logo')); }} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logoMode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>ARCHIVO</button>
+                  <button type="button" onClick={() => { setLogoMode('cramm'); setFormErrors(prev => prev.filter(f => f !== 'logo')); }} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logoMode === 'cramm' ? 'border-b-2 border-[#b91d22] text-[#b91d22]' : 'text-gray-400 hover:text-[#b91d22]'}`}>LOGO CRAMM</button>
                 </div>
 
-                {logoMode === 'url' ? (
-                  <input type="url" value={logoUrlInput} onChange={(e) => setLogoUrlInput(e.target.value)} placeholder="https://ejemplo.com/mifoto.png" className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white" />
-                ) : (
-                  <input type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) setLogoFile(e.target.files[0]) }} className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#eef1f5] file:text-[#333] hover:file:bg-[#e2e6ea]" />
+                {logoMode === 'url' && (
+                  <div className="relative">
+                    <input id="input-logo-url" type="text" value={logoUrlInput} onChange={(e) => { setLogoUrlInput(e.target.value); if (formErrors.includes('logo')) setFormErrors(prev => prev.filter(f => f !== 'logo')); }} placeholder="Ingresa la URL del logo (.png, .jpg)" className={`w-full p-2.5 text-xs border rounded bg-white ${formErrors.includes('logo') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} />
+                    {tooltipField === 'logo' && <ValidationTooltip message="Completa este campo" />}
+                  </div>
+                )}
+                {logoMode === 'file' && (
+                  <div className="w-full relative">
+                    <label htmlFor="logo-upload" className={`flex items-center justify-center gap-2 w-full p-2.5 text-[10px] font-bold border rounded bg-white hover:bg-red-50 cursor-pointer transition-all uppercase tracking-tight ${formErrors.includes('logo') ? 'border-red-500 ring-1 ring-red-500 text-red-500' : 'text-[#b91d22] border-[#b91d22]'}`}>
+                      <span className="material-symbols-outlined text-sm">cloud_upload</span>
+                      Seleccionar Archivo
+                    </label>
+                    {tooltipField === 'logo' && <ValidationTooltip message="Completa este campo" />}
+                    <input id="logo-upload" type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) { setLogoFile(e.target.files[0]); if (formErrors.includes('logo')) setFormErrors(prev => prev.filter(f => f !== 'logo')); } }} className="hidden" />
+                    <div className="mt-1 px-1 text-[9px] text-gray-500 truncate">
+                      {logoFile ? `📄 ${logoFile.name}` : 'Ningún archivo seleccionado'}
+                    </div>
+                  </div>
                 )}
 
-                {((logoMode === 'url' && logoUrlInput) || (logoMode === 'file' && logoFile)) && (
+                {(logoMode === 'cramm' || (logoMode === 'url' && logoUrlInput) || (logoMode === 'file' && logoFile)) && (
                   <div className="mt-3 w-full h-[150px] border border-[#e1e8f0] rounded-md flex justify-center items-center overflow-hidden bg-white shadow-sm p-2">
-                    <img src={logoMode === 'url' ? logoUrlInput : URL.createObjectURL(logoFile)} alt="Logo Preview" className="max-w-full max-h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
+                    <img src={logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : URL.createObjectURL(logoFile))} alt="Logo Preview" className="max-w-full max-h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
                   </div>
                 )}
               </div>
 
               {/* Logo 2 */}
               <div className="bg-[#f8f9fa] p-4 rounded border border-[#eee]">
-                <label className="block text-sm font-semibold text-[#111] mb-2">Logo Secundario (Opcional)</label>
-                <div className="flex gap-4 mb-3 border-b border-[#e1e8f0]">
-                  <button type="button" onClick={() => setLogo2Mode('url')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${logo2Mode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Pegar URL</button>
-                  <button type="button" onClick={() => setLogo2Mode('file')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${logo2Mode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Subir Archivo</button>
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide text-gray-500">Logo Secundario (Opcional)</label>
+                <div className="grid grid-cols-2 mb-3 border-b border-[#e1e8f0]">
+                  <button type="button" onClick={() => setLogo2Mode('url')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logo2Mode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>PEGAR URL</button>
+                  <button type="button" onClick={() => setLogo2Mode('file')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logo2Mode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>ARCHIVO</button>
                 </div>
 
-                {logo2Mode === 'url' ? (
-                  <input type="url" value={logo2UrlInput} onChange={(e) => setLogo2UrlInput(e.target.value)} placeholder="https://ejemplo.com/mifoto2.png" className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white" />
-                ) : (
-                  <input type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) setLogo2File(e.target.files[0]) }} className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#eef1f5] file:text-[#333] hover:file:bg-[#e2e6ea]" />
+                {logo2Mode === 'url' && (
+                  <input type="text" value={logo2UrlInput} onChange={(e) => setLogo2UrlInput(e.target.value)} placeholder="URL opcional..." className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white" />
+                )}
+                {logo2Mode === 'file' && (
+                  <div className="w-full">
+                    <label htmlFor="logo2-upload" className="flex items-center justify-center gap-2 w-full p-2.5 text-[10px] font-bold border border-[#b91d22] text-[#b91d22] rounded bg-white hover:bg-red-50 cursor-pointer transition-all uppercase tracking-tight">
+                      <span className="material-symbols-outlined text-sm">cloud_upload</span>
+                      Seleccionar Archivo
+                    </label>
+                    <input id="logo2-upload" type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) setLogo2File(e.target.files[0]) }} className="hidden" />
+                    <div className="mt-1 px-1 text-[9px] text-gray-500 truncate">
+                      {logo2File ? `📄 ${logo2File.name}` : 'Ningún archivo seleccionado'}
+                    </div>
+                  </div>
                 )}
 
                 {((logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File)) && (
@@ -1522,21 +1636,32 @@ function App() {
 
               {/* Marca de Agua */}
               <div className="bg-[#f8f9fa] p-4 rounded border border-[#eee]">
-                <label className="block text-sm font-semibold text-[#111] mb-2">Marca de Agua (Centro)</label>
-                <div className="flex gap-4 mb-3 border-b border-[#e1e8f0]">
-                  <button type="button" onClick={() => setWatermarkMode('url')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${watermarkMode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Pegar URL</button>
-                  <button type="button" onClick={() => setWatermarkMode('file')} className={`px-2 py-2 text-xs font-semibold cursor-pointer ${watermarkMode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-500 hover:text-gray-800'}`}>Subir Archivo</button>
+                <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide text-gray-500">Marca de Agua (Centro)</label>
+                <div className="grid grid-cols-3 mb-3 border-b border-[#e1e8f0]">
+                  <button type="button" onClick={() => setWatermarkMode('url')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${watermarkMode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>PEGAR URL</button>
+                  <button type="button" onClick={() => setWatermarkMode('file')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${watermarkMode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>ARCHIVO</button>
+                  <button type="button" onClick={() => setWatermarkMode('cramm')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${watermarkMode === 'cramm' ? 'border-b-2 border-[#b91d22] text-[#b91d22]' : 'text-gray-400 hover:text-[#b91d22]'}`}>MARCA CRAMM</button>
                 </div>
 
-                {watermarkMode === 'url' ? (
-                  <input type="url" value={watermarkUrlInput} onChange={(e) => setWatermarkUrlInput(e.target.value)} placeholder="https://ejemplo.com/watermark.png" className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white" />
-                ) : (
-                  <input type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) setWatermarkFile(e.target.files[0]) }} className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#eef1f5] file:text-[#333] hover:file:bg-[#e2e6ea]" />
+                {watermarkMode === 'url' && (
+                  <input type="text" value={watermarkUrlInput} onChange={(e) => setWatermarkUrlInput(e.target.value)} placeholder="URL opcional..." className="w-full p-2.5 text-xs border border-[#e1e8f0] rounded bg-white" />
+                )}
+                {watermarkMode === 'file' && (
+                  <div className="w-full">
+                    <label htmlFor="watermark-upload" className="flex items-center justify-center gap-2 w-full p-2.5 text-[10px] font-bold border border-[#b91d22] text-[#b91d22] rounded bg-white hover:bg-red-50 cursor-pointer transition-all uppercase tracking-tight">
+                      <span className="material-symbols-outlined text-sm">cloud_upload</span>
+                      Seleccionar Archivo
+                    </label>
+                    <input id="watermark-upload" type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files.length > 0) setWatermarkFile(e.target.files[0]) }} className="hidden" />
+                    <div className="mt-1 px-1 text-[9px] text-gray-500 truncate">
+                      {watermarkFile ? `📄 ${watermarkFile.name}` : 'Ningún archivo seleccionado'}
+                    </div>
+                  </div>
                 )}
 
-                {((watermarkMode === 'url' && watermarkUrlInput) || (watermarkMode === 'file' && watermarkFile)) && (
+                {(watermarkMode === 'cramm' || (watermarkMode === 'url' && watermarkUrlInput) || (watermarkMode === 'file' && watermarkFile)) && (
                   <div className="mt-3 w-full h-[150px] border border-[#e1e8f0] rounded-md flex justify-center items-center overflow-hidden bg-white shadow-sm p-2 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZWVlIj48L3JlY3Q+CjxyZWN0IHg9IjQiIHk9IjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNlZWUiPjwvcmVjdD4KPC9zdmc+')]">
-                    <img src={watermarkMode === 'url' ? watermarkUrlInput : URL.createObjectURL(watermarkFile)} alt="Watermark Preview" className="max-w-full max-h-full object-contain mix-blend-multiply" onError={(e) => e.target.style.display = 'none'} />
+                    <img src={watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : URL.createObjectURL(watermarkFile))} alt="Watermark Preview" className="max-w-full max-h-full object-contain mix-blend-multiply" onError={(e) => e.target.style.display = 'none'} />
                   </div>
                 )}
               </div>
@@ -1557,9 +1682,10 @@ function App() {
 
               <div className="space-y-3 bg-[#f8f9fa] p-4 rounded-md border border-[#eee]">
                 {categorias.map((cat, idx) => (
-                  <div key={cat.id} className="flex grid grid-cols-[1fr_80px_auto] items-center gap-3">
-                    <input type="text" placeholder="Categoría (Ej. PRELIMINAR)" value={cat.tipo} onChange={(e) => updateCategoria(idx, 'tipo', e.target.value)} className="w-full p-2.5 text-sm border border-[#ccc] rounded focus:border-[#888] outline-none uppercase" required />
-                    <input type="number" placeholder="Cant." min="1" max="40" value={cat.cant} onChange={(e) => updateCategoria(idx, 'cant', e.target.value)} className="w-full p-2.5 text-sm border border-[#ccc] rounded text-center focus:border-[#888] outline-none" required title="Cantidad de peleas de este tipo" />
+                  <div key={cat.id} className="flex grid grid-cols-[1fr_80px_auto] items-center gap-3 relative">
+                    <input id={idx === 0 ? 'input-cat-tipo-0' : undefined} type="text" placeholder="Categoría (Ej. PRELIMINAR)" value={cat.tipo} onChange={(e) => updateCategoria(idx, 'tipo', e.target.value)} className={`w-full p-2.5 text-sm border rounded focus:border-[#888] outline-none uppercase ${formErrors.includes('categories') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#ccc]'}`} required />
+                    {tooltipField === 'categories' && idx === 0 && <ValidationTooltip message="Completa este campo" />}
+                    <input id={idx === 0 ? 'input-cat-cant-0' : undefined} type="number" placeholder="Cant." min="1" max="40" value={cat.cant} onChange={(e) => updateCategoria(idx, 'cant', e.target.value)} className={`w-full p-2.5 text-sm border rounded text-center focus:border-[#888] outline-none ${formErrors.includes('categories') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#ccc]'}`} required title="Cantidad de peleas de este tipo" />
 
                     {/* Botón borrar fila solo si hay más de 1 categoría */}
                     {categorias.length > 1 ? (
