@@ -867,15 +867,17 @@ function App() {
                           <div className="bg-gray-200 text-[#555] font-black text-[8px] flex items-center justify-center p-1 px-2 uppercase text-center rounded-[2px] w-full max-w-[50px] leading-tight">Logo<br />CRAMM</div>
                         }
                       </div>
-                      <div className="w-[60%] text-right font-bold text-[8px] text-[#111] leading-tight flex flex-col items-end pt-0.5">
-                        <span className="uppercase text-[9px] mb-0.5">{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</span>
+                      <div className="w-[60%] text-right font-bold text-[7px] text-[#111] leading-tight flex flex-col items-end pt-0.5">
+                        <span className="uppercase text-[8.5px] mb-0.5 line-clamp-1">{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</span>
                         <span className="uppercase">{fechaPersonalizada}</span>
                         <span className="uppercase">{formData.ciudad}</span>
                         <span className="uppercase">{pelea.tipo_pelea} {pelea.ordenEnCategoria}</span>
                       </div>
                     </div>
 
-                    <div className="text-center font-black text-[12px] tracking-widest mb-1.5 mt-1 uppercase text-[#111]">{`${formData.nombre_evento || 'BUDO'} ${formData.disciplina || 'STRIKING'}`.trim()}</div>
+                    <div className={`text-center font-black tracking-widest mb-1 mt-0.5 uppercase text-[#111] leading-tight ${((formData.nombre_evento || '').length + (formData.disciplina || '').length) > 35 ? 'text-[9.5px]' : 'text-[12px]'}`}>
+                      {`${formData.nombre_evento || 'BUDO'} ${formData.disciplina || 'STRIKING'}`.trim()}
+                    </div>
 
                     {/* Nombres Box Clasico */}
                     <div className="flex justify-center items-center gap-1 w-full mb-1.5 px-1">
@@ -894,39 +896,33 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="flex-1 px-4 mt-1">
-                      <div className="grid grid-cols-[1fr_30px_1fr] gap-2 items-center h-full pb-1">
-                        <div className="flex flex-col gap-1.5 h-full pt-1">
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full mt-1.5 bg-white print:-webkit-print-color-adjust: exact"></div>
+                    <div className="flex-1 px-4 mt-0.5">
+                      <div className="grid grid-cols-[1fr_30px_1fr] gap-x-2 items-center h-full pb-0.5">
+                        <div className="flex flex-col gap-1 h-full pt-0.5">
+                          {[1, 2, 3, 4].map(n => <div key={n} className="border border-[#111] h-[17px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>)}
+                          <div className="border border-[#111] h-[17px] w-full mt-1 bg-white print:-webkit-print-color-adjust: exact"></div>
                         </div>
-                        <div className="flex flex-col gap-1.5 font-black text-[8px] text-black text-center h-full pt-1 justify-start">
-                          <div className="h-[18px] flex items-center justify-center">R1</div>
-                          <div className="h-[18px] flex items-center justify-center">R2</div>
-                          <div className="h-[18px] flex items-center justify-center">R3</div>
-                          <div className="h-[18px] flex items-center justify-center">R4</div>
-                          <div className="h-[18px] flex items-center justify-center mt-1.5 leading-none text-[6.5px]">TOTAL</div>
+                        <div className="flex flex-col gap-1 font-black text-[8px] text-black text-center h-full pt-0.5 justify-start">
+                          {['R1', 'R2', 'R3', 'R4'].map(r => <div key={r} className="h-[17px] flex items-center justify-center">{r}</div>)}
+                          <div className="h-[17px] flex items-center justify-center mt-1 leading-none text-[6.5px]">TOTAL</div>
                         </div>
-                        <div className="flex flex-col gap-1.5 h-full pt-1">
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
-                          <div className="border border-[#111] h-[18px] w-full mt-1.5 bg-white print:-webkit-print-color-adjust: exact"></div>
+                        <div className="flex flex-col gap-1 h-full pt-0.5">
+                          {[1, 2, 3, 4].map(n => <div key={n} className="border border-[#111] h-[17px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>)}
+                          <div className="border border-[#111] h-[17px] w-full mt-1 bg-white print:-webkit-print-color-adjust: exact"></div>
                         </div>
                       </div>
                     </div>
 
                     <div className="w-full mt-auto mb-0 flex flex-col justify-end">
-                      <div className="flex justify-center gap-2 mb-6 mt-1">
+                      <div className="flex justify-center gap-2 mb-2 mt-0.5">
                         <div className="border border-[#111] px-2 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">K.O</div>
                         <div className="border border-[#111] px-2 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">T.K.O</div>
                         <div className="border border-[#111] px-1.5 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">T.K.O.M</div>
                       </div>
-                      <div className="font-extrabold text-[8px] text-black uppercase text-left ml-1 mt-1">NOMBRE DEL JUEZ</div>
+                      <div className="flex justify-between items-end px-1 mt-0.5">
+                        <div className="font-extrabold text-[7.5px] text-black uppercase">NOMBRE DEL JUEZ</div>
+                        <div className="border-b border-[#111] w-32 border-solid mb-0.5"></div>
+                      </div>
                     </div>
                   </div>
                 )}
