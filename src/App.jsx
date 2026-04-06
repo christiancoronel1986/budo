@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
+// --- UTILIDADES GLOBALES ---
+const formatFriendlyDate = (fechaISO) => {
+  if (!fechaISO) return '';
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const partes = fechaISO.split('-');
+  if (partes.length !== 3) return fechaISO;
+  const dia = parseInt(partes[2], 10);
+  const mes = meses[parseInt(partes[1], 10) - 1];
+  const anio = partes[0];
+  return `${dia} ${mes} ${anio}`;
+};
+
 function App() {
   // --------- ESTADOS COMPARTIDOS ---------
   const [currentStep, setCurrentStep] = useState(1)
@@ -573,10 +585,7 @@ function App() {
         <div className="mb-6 p-4 sm:p-5 bg-[#f8f9fa] border border-[#e1e8f0] rounded-md">
           <p className="m-0 text-[#111] font-medium leading-relaxed text-sm sm:text-base">
             <span className="font-bold uppercase text-[#b91d22]">{formData.nombre_evento}</span>{formData.numero_evento && `: ${formData.numero_evento}`}<br />
-            Fecha: {formData.fecha ? (() => {
-                const [y, m, d] = formData.fecha.split('-');
-                return `${m}-${d}-${y}`;
-              })() : ''} | Sede: {formData.ciudad} | Disciplina: {formData.disciplina || 'Varias'}<br />
+            Fecha: {formatFriendlyDate(formData.fecha)}, Sede: {formData.ciudad?.toUpperCase()} | Disciplina: {formData.disciplina || 'Varias'}<br />
             Actualmente llenando tarjeta: <strong className="text-[#b91d22] uppercase">{nombreCategoria}</strong> ({arrayPeleasDelPaso.length} {arrayPeleasDelPaso.length === 1 ? 'pelea' : 'peleas'})
           </p>
         </div>
@@ -708,7 +717,7 @@ function App() {
             <ul className="text-[15px] text-[#333] space-y-2 list-none p-0 m-0">
               <li><strong>Nombre:</strong> {formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</li>
               <li><strong>Disciplina:</strong> {formData.disciplina || 'Varias'}</li>
-              <li><strong>Fecha:</strong> {formData.fecha}</li>
+              <li><strong>Fecha:</strong> {formatFriendlyDate(formData.fecha)}</li>
               <li><strong>Sede:</strong> {formData.ciudad}</li>
             </ul>
           </div>
@@ -825,17 +834,17 @@ function App() {
     const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
     const hasLogos = logo1UrlFinal || logo2UrlFinal;
 
-    const formatearFecha = (fechaISO) => {
-      if (!fechaISO) return '';
-      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const partes = fechaISO.split('-');
-      if (partes.length !== 3) return fechaISO;
-      const dia = parseInt(partes[2], 10);
-      const mes = meses[parseInt(partes[1], 10) - 1];
-      const anio = partes[0].slice(-2);
-      return `${dia} ${mes} ${anio}`;
+    // Función auxiliar para ajustar el tamaño de fuente según la longitud del texto
+    const getAdjustedFontSize = (text, baseSize, threshold = 25, minSize = 6) => {
+      if (!text) return `${baseSize}px`;
+      if (text.length > threshold) {
+        const factor = (text.length - threshold) * 0.15;
+        const newSize = Math.max(minSize, baseSize - factor);
+        return `${newSize}px`;
+      }
+      return `${baseSize}px`;
     };
-    const fechaPersonalizada = formatearFecha(formData.fecha);
+
     for (let i = 0; i < totalPaginas; i++) {
       const peleasPagina = flattenPeleas.slice(i * 9, (i + 1) * 9);
 
@@ -867,17 +876,15 @@ function App() {
                           <div className="bg-gray-200 text-[#555] font-black text-[8px] flex items-center justify-center p-1 px-2 uppercase text-center rounded-[2px] w-full max-w-[50px] leading-tight">Logo<br />CRAMM</div>
                         }
                       </div>
-                      <div className="w-[60%] text-right font-bold text-[7px] text-[#111] leading-tight flex flex-col items-end pt-0.5">
-                        <span className="uppercase text-[8.5px] mb-0.5 line-clamp-1">{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</span>
-                        <span className="uppercase">{fechaPersonalizada}</span>
-                        <span className="uppercase">{formData.ciudad}</span>
-                        <span className="uppercase">{pelea.tipo_pelea} {pelea.ordenEnCategoria}</span>
+                      <div className="w-[60%] text-right font-bold text-[#111] leading-tight flex flex-col items-end pt-0.5">
+                        <span className="uppercase mb-0.5" style={{ fontSize: getAdjustedFontSize(formData.nombre_evento, 9, 20, 6.5) }}>{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</span>
+                        <span className="uppercase" style={{ fontSize: '8px' }}>{formatFriendlyDate(formData.fecha)}</span>
+                        <span className="uppercase" style={{ fontSize: getAdjustedFontSize(formData.ciudad, 8, 20, 6) }}>{formData.ciudad}</span>
+                        <span className="uppercase" style={{ fontSize: '8px' }}>{pelea.tipo_pelea} {pelea.ordenEnCategoria}</span>
                       </div>
                     </div>
 
-                    <div className={`text-center font-black tracking-widest mb-1 mt-0.5 uppercase text-[#111] leading-tight ${((formData.nombre_evento || '').length + (formData.disciplina || '').length) > 35 ? 'text-[9.5px]' : 'text-[12px]'}`}>
-                      {`${formData.nombre_evento || 'BUDO'} ${formData.disciplina || 'STRIKING'}`.trim()}
-                    </div>
+                    <div className="text-center font-black tracking-widest mb-1.5 mt-1 uppercase text-[#111] text-[12px]">{formData.disciplina || 'STRIKING'}</div>
 
                     {/* Nombres Box Clasico */}
                     <div className="flex justify-center items-center gap-1 w-full mb-1.5 px-1">
@@ -896,33 +903,39 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="flex-1 px-4 mt-0.5">
-                      <div className="grid grid-cols-[1fr_30px_1fr] gap-x-2 items-center h-full pb-0.5">
-                        <div className="flex flex-col gap-1 h-full pt-0.5">
-                          {[1, 2, 3, 4].map(n => <div key={n} className="border border-[#111] h-[17px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>)}
-                          <div className="border border-[#111] h-[17px] w-full mt-1 bg-white print:-webkit-print-color-adjust: exact"></div>
+                    <div className="flex-1 px-4 mt-1">
+                      <div className="grid grid-cols-[1fr_30px_1fr] gap-2 items-center h-full pb-1">
+                        <div className="flex flex-col gap-1.5 h-full pt-1">
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full mt-1.5 bg-white print:-webkit-print-color-adjust: exact"></div>
                         </div>
-                        <div className="flex flex-col gap-1 font-black text-[8px] text-black text-center h-full pt-0.5 justify-start">
-                          {['R1', 'R2', 'R3', 'R4'].map(r => <div key={r} className="h-[17px] flex items-center justify-center">{r}</div>)}
-                          <div className="h-[17px] flex items-center justify-center mt-1 leading-none text-[6.5px]">TOTAL</div>
+                        <div className="flex flex-col gap-1.5 font-black text-[8px] text-black text-center h-full pt-1 justify-start">
+                          <div className="h-[18px] flex items-center justify-center">R1</div>
+                          <div className="h-[18px] flex items-center justify-center">R2</div>
+                          <div className="h-[18px] flex items-center justify-center">R3</div>
+                          <div className="h-[18px] flex items-center justify-center">R4</div>
+                          <div className="h-[18px] flex items-center justify-center mt-1.5 leading-none text-[6.5px]">TOTAL</div>
                         </div>
-                        <div className="flex flex-col gap-1 h-full pt-0.5">
-                          {[1, 2, 3, 4].map(n => <div key={n} className="border border-[#111] h-[17px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>)}
-                          <div className="border border-[#111] h-[17px] w-full mt-1 bg-white print:-webkit-print-color-adjust: exact"></div>
+                        <div className="flex flex-col gap-1.5 h-full pt-1">
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full bg-white print:-webkit-print-color-adjust: exact"></div>
+                          <div className="border border-[#111] h-[18px] w-full mt-1.5 bg-white print:-webkit-print-color-adjust: exact"></div>
                         </div>
                       </div>
                     </div>
 
                     <div className="w-full mt-auto mb-0 flex flex-col justify-end">
-                      <div className="flex justify-center gap-2 mb-2 mt-0.5">
+                      <div className="flex justify-center gap-2 mb-6 mt-1">
                         <div className="border border-[#111] px-2 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">K.O</div>
                         <div className="border border-[#111] px-2 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">T.K.O</div>
                         <div className="border border-[#111] px-1.5 py-0.5 font-bold text-[8px] text-[#111] leading-none bg-white print:-webkit-print-color-adjust: exact">T.K.O.M</div>
                       </div>
-                      <div className="flex justify-between items-end px-1 mt-0.5">
-                        <div className="font-extrabold text-[7.5px] text-black uppercase">NOMBRE DEL JUEZ</div>
-                        <div className="border-b border-[#111] w-32 border-solid mb-0.5"></div>
-                      </div>
+                      <div className="font-extrabold text-[8px] text-black uppercase text-left ml-1 mt-1">NOMBRE DEL JUEZ</div>
                     </div>
                   </div>
                 )}
@@ -931,7 +944,7 @@ function App() {
                 {printDesign === 2 && (
                   <div className="w-full h-full flex flex-col px-1 justify-between pb-1">
                     <div>
-                      <div className="flex justify-between items-center mb-0 border-b border-gray-300 pb-1.5">
+                      <div className="flex justify-between items-center mb-0 border-b border-black pb-1.5">
                         <div className="w-[30%] flex gap-1.5 h-7">
                           {hasLogos ?
                             <>
@@ -942,24 +955,24 @@ function App() {
                             <div className="font-serif italic text-gray-400 text-[10px]">CRAMM</div>
                           }
                         </div>
-                        <div className="w-[70%] text-right font-light flex flex-col justify-end pt-1">
-                          <div className="font-bold text-[8px] text-[#222] uppercase tracking-wider mb-0.5">{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</div>
-                          <div className="text-[7px] text-gray-500 tracking-widest uppercase">{fechaPersonalizada} | {formData.ciudad}</div>
+                        <div className="w-[70%] text-right font-medium flex flex-col justify-end pt-1">
+                          <div className="font-bold text-black uppercase tracking-wider mb-0.5" style={{ fontSize: getAdjustedFontSize(formData.nombre_evento, 8, 20, 6) }}>{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</div>
+                          <div className="text-black tracking-widest uppercase" style={{ fontSize: getAdjustedFontSize(formData.ciudad, 7, 25, 5) }}>{formatFriendlyDate(formData.fecha)} | {formData.ciudad}</div>
                           <div className="text-[9px] text-[#333] tracking-widest uppercase mt-0.5 font-bold min-h-[14px]">
                             {pelea.tipo_pelea || pelea.ordenEnCategoria ? `${pelea.tipo_pelea} ${pelea.ordenEnCategoria}` : '\u00A0'}
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-center font-light text-[12px] tracking-[0.2em] mb-1.5 mt-1.5 uppercase text-[#222]">
-                        {formData.nombre_evento} <span className="font-bold">{formData.disciplina || 'STRIKING'}</span>
+                      <div className="text-center font-bold tracking-[0.2em] mb-1.5 mt-1.5 uppercase text-[#222] text-[12px]">
+                        {formData.disciplina || 'STRIKING'}
                       </div>
 
                       <div className="w-full flex justify-between px-2 mb-1">
                         <div className="w-[45%] border-b-2 border-red-500 pb-0.5 text-center font-bold uppercase text-[9px] text-[#222] print:border-red-500 print:-webkit-print-color-adjust: exact overflow-hidden truncate min-h-[18px]">
                           {pelea.rojo_apellido || '\u00A0'}
                         </div>
-                        <div className="w-[10%] text-center font-light text-[7px] text-gray-400 self-end pb-0.5">vs</div>
+                        <div className="w-[10%] text-center font-bold text-[7px] text-black self-end pb-0.5">vs</div>
                         <div className="w-[45%] border-b-2 border-blue-500 pb-0.5 text-center font-bold uppercase text-[9px] text-[#222] print:border-blue-500 print:-webkit-print-color-adjust: exact overflow-hidden truncate min-h-[18px]">
                           {pelea.azul_apellido || '\u00A0'}
                         </div>
@@ -969,13 +982,13 @@ function App() {
                     <div className="flex-1 px-3 mt-2 mb-1 flex flex-col justify-center">
                       <div className="grid grid-cols-[1fr_30px_1fr] gap-x-3 gap-y-2.5 items-center">
                         <div className="flex flex-col gap-2.5 justify-center">
-                          {['R1', 'R2', 'R3', 'R4', 'TOTAL'].map((r, i) => <div key={i} className={`border-b ${i === 4 ? 'border-[#000] border-b-2 mt-2' : 'border-gray-400'} h-[14px] w-full`}></div>)}
+                          {['R1', 'R2', 'R3', 'R4', 'TOTAL'].map((r, i) => <div key={i} className={`border-b ${i === 4 ? 'border-[#000] border-b-2 mt-2' : 'border-black'} h-[14px] w-full`}></div>)}
                         </div>
-                        <div className="flex flex-col gap-2.5 font-light text-[8px] text-gray-600 text-center justify-center">
+                        <div className="flex flex-col gap-2.5 font-bold text-[8px] text-black text-center justify-center">
                           {['R1', 'R2', 'R3', 'R4', 'TOTAL'].map((r, i) => <div key={i} className={`h-[14px] flex items-end justify-center ${i === 4 ? 'mt-2 font-bold text-black text-[6.5px]' : ''}`}>{r}</div>)}
                         </div>
                         <div className="flex flex-col gap-2.5 justify-center">
-                          {['R1', 'R2', 'R3', 'R4', 'TOTAL'].map((r, i) => <div key={i} className={`border-b ${i === 4 ? 'border-[#000] border-b-2 mt-2' : 'border-gray-400'} h-[14px] w-full`}></div>)}
+                          {['R1', 'R2', 'R3', 'R4', 'TOTAL'].map((r, i) => <div key={i} className={`border-b ${i === 4 ? 'border-[#000] border-b-2 mt-2' : 'border-black'} h-[14px] w-full`}></div>)}
                         </div>
                       </div>
                     </div>
@@ -983,12 +996,12 @@ function App() {
                     <div className="w-full mt-auto flex flex-col items-center">
                       <div className="flex gap-4 mb-6">
                         {['K.O', 'T.K.O', 'T.K.O.M'].map((x, i) => (
-                          <div key={i} className="flex items-center gap-1"><div className="w-2h-[10px] rounded-sm border border-gray-500 h-2.5 w-2.5"></div><span className="text-[7px] text-gray-600 font-bold">{x}</span></div>
+                          <div key={i} className="flex items-center gap-1"><div className="w-2h-[10px] rounded-sm border border-black h-2.5 w-2.5"></div><span className="text-[7px] text-black font-bold">{x}</span></div>
                         ))}
                       </div>
                       <div className="w-full px-2 mt-1">
-                        <div className="border-b border-gray-400 w-full mb-1"></div>
-                        <div className="font-light text-[7px] text-gray-500 uppercase text-center tracking-widest font-bold">NOMBRE DEL JUEZ</div>
+                        <div className="border-b border-black w-full mb-1"></div>
+                        <div className="font-bold text-[7px] text-black uppercase text-center tracking-widest">NOMBRE DEL JUEZ</div>
                       </div>
                     </div>
                   </div>
@@ -1010,12 +1023,12 @@ function App() {
                           }
                         </div>
                         <div className="text-right flex-1 flex flex-col items-end pt-0.5 justify-center">
-                          <div className="font-black text-[8px] uppercase text-black leading-none mb-0.5">{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</div>
-                          <div className="font-black text-[12px] uppercase text-[#d32f2f] tracking-tighter mix-blend-multiply mb-0.5 leading-none">
-                            <span className="text-black">{formData.nombre_evento} </span>{formData.disciplina || 'STRIKING'}
+                          <div className="font-black uppercase text-black leading-none mb-0.5" style={{ fontSize: getAdjustedFontSize(formData.nombre_evento, 8, 20, 6) }}>{formData.nombre_evento} {formData.numero_evento ? ` ${formData.numero_evento}` : ''}</div>
+                          <div className="font-black uppercase text-[#d32f2f] tracking-tighter mix-blend-multiply mb-0.5 leading-none text-[12px] text-center w-full">
+                            {formData.disciplina || 'STRIKING'}
                           </div>
-                          <div className="text-[6px] text-black font-extrabold uppercase tracking-widest mb-0.5">
-                            {formData.ciudad} - {fechaPersonalizada}
+                          <div className="text-black font-extrabold uppercase tracking-widest mb-0.5" style={{ fontSize: getAdjustedFontSize(formData.ciudad, 6, 25, 5) }}>
+                            {formData.ciudad} - {formatFriendlyDate(formData.fecha)}
                           </div>
                           <div className="font-bold text-[6px] text-black uppercase tracking-widest bg-yellow-400 inline-flex items-center justify-center px-1.5 pt-px print:bg-yellow-400 print:-webkit-print-color-adjust: exact border border-black shadow-[1px_1px_0px_#000] h-[11px] min-w-[40px]">
                             {pelea.tipo_pelea || pelea.ordenEnCategoria ? `${pelea.tipo_pelea} ${pelea.ordenEnCategoria}` : '\u00A0'}
@@ -1159,7 +1172,7 @@ function App() {
                 </div>
                 <div className="text-center">
                   <h1 className="text-xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
-                  <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formData.fecha} | {formData.ciudad}</p>
+                  <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad}</p>
                   <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">
                     Lista de Chequeo de Peleadores {paginas.length > 1 ? `(Pág. ${pIdx + 1}/${paginas.length})` : ''}
                   </div>
@@ -1261,7 +1274,7 @@ function App() {
              </div>
              <div className="text-center">
                 <h1 className="text-2xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
-                <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formData.fecha} | {formData.ciudad} | {formData.disciplina}</p>
+                <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
                 <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
              </div>
              <div className="w-[100px] h-[80px] flex items-center justify-center">
@@ -1549,7 +1562,7 @@ function App() {
                   </div>
                 ) : (
                   <div className="flex gap-1 h-[42px] relative">
-                    <select id="input-nombre_evento" name="nombre_evento" value={formData.nombre_evento} onChange={handleChange1} className={`flex-grow p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('nombre_evento') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
+                    <select id="input-nombre_evento" name="nombre_evento" value={formData.nombre_evento} onChange={handleChange1} className={`flex-1 min-w-0 p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('nombre_evento') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
                       <option value="" disabled hidden>Seleccione evento</option>
                       {nombresEventos.map((n) => (<option key={n.id} value={n.nombre}>{n.nombre}</option>))}
                     </select>
@@ -1577,7 +1590,7 @@ function App() {
                   </div>
                 ) : (
                   <div className="flex gap-1 h-[42px] relative">
-                    <select id="input-ciudad" name="ciudad" value={formData.ciudad} onChange={handleChange1} className={`flex-grow p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('ciudad') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
+                    <select id="input-ciudad" name="ciudad" value={formData.ciudad} onChange={handleChange1} className={`flex-1 min-w-0 p-2.5 text-sm border rounded bg-white text-[#333] cursor-pointer ${formErrors.includes('ciudad') ? 'border-red-500 ring-1 ring-red-500' : 'border-[#e1e8f0]'}`} required>
                       <option value="" disabled hidden>Seleccione sede</option>
                       {ciudades.map((c) => (<option key={c.id} value={c.nombre}>{c.nombre}</option>))}
                     </select>
