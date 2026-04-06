@@ -105,6 +105,59 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [savedEventId])
 
+  // --------- MEJORAS DE NAVEGACION (SCROLL Y BOTON ATRAS) ---------
+  
+  // 1. Efecto para Scroll al inicio al cambiar de vista o paso
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode]);
+
+  // 2. Sincronizar estado con el Historial del Navegador (Hash)
+  useEffect(() => {
+    let hash = '';
+    if (isPrintMode) hash = 'impresion';
+    else if (isResultMode) hash = 'resultados';
+    else if (isControlMode) hash = 'control-resultados';
+    else if (isChecklistMode) hash = 'checklist';
+    else if (isSuccess) hash = 'finalizado';
+    else if (currentStep > 1) hash = `paso-${currentStep}`;
+    else hash = 'registro';
+
+    // Evitar duplicar si el hash ya es el mismo (ej. al usar botón atrás)
+    if (window.location.hash !== `#${hash}`) {
+      window.history.pushState({ step: currentStep, mode: hash }, '', `#${hash}`);
+    }
+  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode]);
+
+  // 3. Listener para el botón atrás del navegador o gestos
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '');
+      
+      // Cerrar vistas especiales si retrocedemos
+      setIsPrintMode(hash === 'impresion');
+      setIsResultMode(hash === 'resultados');
+      setIsControlMode(hash === 'control-resultados');
+      setIsChecklistMode(hash === 'checklist');
+      
+      if (hash === 'finalizado') {
+        setIsSuccess(true);
+      } else if (hash.startsWith('paso-')) {
+        const step = parseInt(hash.split('-')[1]);
+        if (!isNaN(step)) {
+          setCurrentStep(step);
+          setIsSuccess(false);
+        }
+      } else if (hash === 'registro' || !hash) {
+        setCurrentStep(1);
+        setIsSuccess(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const fetchCiudades = async () => {
     try {
       const { data, error } = await supabase.from('ciudades').select('*').order('nombre')
