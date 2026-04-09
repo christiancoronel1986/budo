@@ -728,14 +728,14 @@ function App() {
             <div className="flex gap-4 items-start">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-[#555]">LOGO 1</span>
-                <div className="w-[80px] h-[80px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
+                <div className="w-[100px] h-[100px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
                   {(logoMode === 'cramm' || (logoMode === 'url' && logoUrlInput) || (logoMode === 'file' && logoFile)) ?
                     <img src={logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : URL.createObjectURL(logoFile))} alt="L1" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-[#555]">LOGO 2</span>
-                <div className="w-[80px] h-[80px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
+                <div className="w-[100px] h-[100px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
                   {(logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File) ?
                     <img src={logo2Mode === 'url' ? logo2UrlInput : URL.createObjectURL(logo2File)} alt="L2" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
                 </div>
@@ -866,11 +866,11 @@ function App() {
                   <div className="w-full h-full flex flex-col">
                     {/* Cabecera Tarjeta */}
                     <div className="flex justify-between items-start mb-1.5">
-                      <div className="w-[35%] flex justify-left items-center h-10 mt-0.5 gap-2 pl-0.5">
+                      <div className="w-[40%] flex justify-left items-center h-12 mt-0.5 gap-2 pl-0.5">
                         {hasLogos ?
                           <>
-                            {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full w-auto max-w-[45%] object-contain mix-blend-multiply opacity-90 scale-110 transform origin-left" />}
-                            {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full w-auto max-w-[45%] object-contain mix-blend-multiply opacity-90 scale-110 transform origin-left" />}
+                            {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full w-auto max-w-[48%] object-contain mix-blend-multiply opacity-90 scale-125 transform origin-left" />}
+                            {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full w-auto max-w-[48%] object-contain mix-blend-multiply opacity-90 scale-125 transform origin-left" />}
                           </>
                           :
                           <div className="bg-gray-200 text-[#555] font-black text-[8px] flex items-center justify-center p-1 px-2 uppercase text-center rounded-[2px] w-full max-w-[50px] leading-tight">Logo<br />CRAMM</div>
@@ -1167,7 +1167,7 @@ function App() {
             <div key={`page-${pIdx}`} className={`${pIdx > 0 ? 'print:pt-8' : ''} ${pIdx < paginas.length - 1 ? 'print:page-break-after-always mb-12 print:mb-0' : ''}`}>
               {/* Header imprimible - Se repite en cada página */}
               <div className="bg-white border-2 border-black p-5 mb-6 rounded-md shadow-sm flex items-center justify-between">
-                <div className="w-[90px] h-[70px] flex items-center justify-center">
+                <div className="w-[110px] h-[85px] flex items-center justify-center">
                   {logo1UrlFinal && <img src={logo1UrlFinal} alt="L1" className="max-h-full max-w-full object-contain" />}
                 </div>
                 <div className="text-center">
@@ -1177,7 +1177,7 @@ function App() {
                     Lista de Chequeo de Peleadores {paginas.length > 1 ? `(Pág. ${pIdx + 1}/${paginas.length})` : ''}
                   </div>
                 </div>
-                <div className="w-[90px] h-[70px] flex items-center justify-center">
+                <div className="w-[110px] h-[85px] flex items-center justify-center">
                   {logo2UrlFinal && <img src={logo2UrlFinal} alt="L2" className="max-h-full max-w-full object-contain" />}
                 </div>
               </div>
@@ -1269,7 +1269,7 @@ function App() {
         <div className="pt-24 pb-10 px-4 max-w-5xl mx-auto print:pt-0 print:pb-0 print:max-w-none">
           {/* Header Imprimible */}
           <div className="bg-white border-2 border-black p-6 mb-6 rounded-md shadow-sm flex items-center justify-between">
-            <div className="w-[100px] h-[80px] flex items-center justify-center">
+            <div className="w-[130px] h-[100px] flex items-center justify-center">
               {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full max-w-full object-contain" />}
             </div>
             <div className="text-center">
@@ -1277,7 +1277,7 @@ function App() {
               <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
               <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
             </div>
-            <div className="w-[100px] h-[80px] flex items-center justify-center">
+            <div className="w-[130px] h-[100px] flex items-center justify-center">
               {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full max-w-full object-contain" />}
             </div>
           </div>
@@ -1397,7 +1397,7 @@ function App() {
                   {/* TÍTULO Y LOGOS */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', gap: '20px', position: 'relative' }}>
                     {/* Logo Izquierdo */}
-                    <div style={{ width: '80px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ width: '100px', height: '75px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
                     </div>
 
@@ -1407,7 +1407,7 @@ function App() {
                     </div>
 
                     {/* Logo Derecho */}
-                    <div style={{ width: '80px', height: '60px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ width: '100px', height: '75px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
                     </div>
                   </div>
