@@ -43,7 +43,7 @@ function App() {
   })
 
   // Híbrido de Logo 1
-  const [logoMode, setLogoMode] = useState('url') 
+  const [logoMode, setLogoMode] = useState('url')
   const [logoFile, setLogoFile] = useState(null)
   const [logoUrlInput, setLogoUrlInput] = useState('')
 
@@ -118,7 +118,7 @@ function App() {
   }, [savedEventId])
 
   // --------- MEJORAS DE NAVEGACION (SCROLL Y BOTON ATRAS) ---------
-  
+
   // 1. Efecto para Scroll al inicio al cambiar de vista o paso
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -145,13 +145,13 @@ function App() {
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '');
-      
+
       // Cerrar vistas especiales si retrocedemos
       setIsPrintMode(hash === 'impresion');
       setIsResultMode(hash === 'resultados');
       setIsControlMode(hash === 'control-resultados');
       setIsChecklistMode(hash === 'checklist');
-      
+
       if (hash === 'finalizado') {
         setIsSuccess(true);
       } else if (hash.startsWith('paso-')) {
@@ -270,7 +270,7 @@ function App() {
 
     // 1. Validar Datos Básicos y Logo (Campos Obligatorios)
     const logoInvalido = (logoMode === 'url' && !logoUrlInput.trim()) || (logoMode === 'file' && !logoFile);
-    
+
     // Lista de campos que faltan
     const errors = [];
     if (!formData.nombre_evento.trim()) errors.push('nombre_evento');
@@ -282,7 +282,7 @@ function App() {
     if (errors.length > 0) {
       setFormErrors(errors);
       setTooltipField(errors[0]);
-      
+
       // Auto-focus al primer error
       setTimeout(() => {
         const first = errors[0];
@@ -299,7 +299,7 @@ function App() {
       }, 100);
       return;
     }
-    
+
     // Si llegamos aquí todo lo básico está bien
     setFormErrors([]);
     setTooltipField(null);
@@ -308,7 +308,7 @@ function App() {
     if (categoriasValidas.length === 0) {
       setFormErrors(prev => [...prev, 'categories']);
       setTooltipField('categories');
-      
+
       // Focus al primer campo de categoría
       setTimeout(() => {
         const el = document.getElementById('input-cat-tipo-0');
@@ -854,7 +854,7 @@ function App() {
             const pelea = peleasPagina[indexCelda] || { tipo_pelea: '', ordenEnCategoria: '', rojo_nombre: '', rojo_apellido: '', azul_nombre: '', azul_apellido: '' };
             return (
               <div key={`celda-${i}-${indexCelda}`} className={`w-full h-full flex flex-col text-[10px] font-sans box-border relative overflow-hidden bg-white ${printDesign === 3 ? 'border-[3px] border-black pt-1.5 px-1.5 pb-0 print:border-black'
-                  : 'border border-gray-400 pt-3 pb-2 px-3 print:border-[#111]'
+                : 'border border-gray-400 pt-3 pb-2 px-3 print:border-[#111]'
                 }`}>
                 {watermarkUrlFinal && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.18] pointer-events-none z-[0]">
@@ -1124,7 +1124,7 @@ function App() {
       </div>
     );
   }
-  
+
   if (isChecklistMode) {
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
@@ -1248,112 +1248,112 @@ function App() {
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
     const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
     const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
-  
+
     const flattenPeleas = [];
     fightFormsData.forEach((grupoCategoria) => {
       grupoCategoria.forEach((pelea, idx) => {
         flattenPeleas.push({ ...pelea, ordenEnCategoria: idx + 1 });
       });
     });
-  
+
     return (
       <div className="control-mode-wrapper bg-gray-100 min-h-screen print:bg-white print:p-0">
         <div className="no-print fixed top-0 left-0 right-0 bg-[#1a1a1a] text-white flex flex-col sm:flex-row justify-between items-center p-3 sm:p-4 z-[100] shadow-lg border-b border-red-600 gap-3">
-           <h2 className="m-0 font-black text-sm sm:text-lg tracking-widest text-red-500 uppercase text-center sm:text-left truncate w-full sm:w-auto">Hoja de Control de Resultados</h2>
-           <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-center">
-             <button onClick={() => setIsControlMode(false)} className="bg-gray-700 hover:bg-gray-600 px-4 sm:px-5 py-2 rounded font-bold transition-all text-[11px] sm:text-sm uppercase cursor-pointer border-none text-white whitespace-nowrap">← Volver</button>
-             <button onClick={() => window.print()} className="bg-red-600 hover:bg-red-700 px-5 sm:px-6 py-2 rounded font-black text-white shadow-[0_3px_0_#991b1b] active:translate-y-px active:shadow-none transition-all flex items-center gap-2 text-[11px] sm:text-sm uppercase cursor-pointer border-none whitespace-nowrap"><span className="material-symbols-outlined text-[16px] sm:text-[18px]">print</span> Imprimir Lista</button>
-           </div>
+          <h2 className="m-0 font-black text-sm sm:text-lg tracking-widest text-red-500 uppercase text-center sm:text-left truncate w-full sm:w-auto">Hoja de Control de Resultados</h2>
+          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-center">
+            <button onClick={() => setIsControlMode(false)} className="bg-gray-700 hover:bg-gray-600 px-4 sm:px-5 py-2 rounded font-bold transition-all text-[11px] sm:text-sm uppercase cursor-pointer border-none text-white whitespace-nowrap">← Volver</button>
+            <button onClick={() => window.print()} className="bg-red-600 hover:bg-red-700 px-5 sm:px-6 py-2 rounded font-black text-white shadow-[0_3px_0_#991b1b] active:translate-y-px active:shadow-none transition-all flex items-center gap-2 text-[11px] sm:text-sm uppercase cursor-pointer border-none whitespace-nowrap"><span className="material-symbols-outlined text-[16px] sm:text-[18px]">print</span> Imprimir Lista</button>
+          </div>
         </div>
-  
+
         <div className="pt-24 pb-10 px-4 max-w-5xl mx-auto print:pt-0 print:pb-0 print:max-w-none">
           {/* Header Imprimible */}
           <div className="bg-white border-2 border-black p-6 mb-6 rounded-md shadow-sm flex items-center justify-between">
-             <div className="w-[100px] h-[80px] flex items-center justify-center">
-               {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full max-w-full object-contain" />}
-             </div>
-             <div className="text-center">
-                <h1 className="text-2xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
-                <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
-                <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
-             </div>
-             <div className="w-[100px] h-[80px] flex items-center justify-center">
-               {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full max-w-full object-contain" />}
-             </div>
+            <div className="w-[100px] h-[80px] flex items-center justify-center">
+              {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full max-w-full object-contain" />}
+            </div>
+            <div className="text-center">
+              <h1 className="text-2xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
+              <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
+              <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
+            </div>
+            <div className="w-[100px] h-[80px] flex items-center justify-center">
+              {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full max-w-full object-contain" />}
+            </div>
           </div>
-  
+
           {/* Grid de Tarjetas de Peleas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
             {flattenPeleas.map((pelea, idx) => (
               <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm overflow-hidden flex flex-col relative h-[300px] print:h-[280px]">
                 {/* Background Watermark for Control Sheet too */}
                 {watermarkUrlFinal && (
-                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
-                     <img src={watermarkUrlFinal} alt="W" className="max-w-[60%] max-h-[60%] object-contain" />
-                   </div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
+                    <img src={watermarkUrlFinal} alt="W" className="max-w-[60%] max-h-[60%] object-contain" />
+                  </div>
                 )}
-                
+
                 {/* Top Section: Category and Number */}
                 <div className="bg-black text-white p-2 flex justify-between items-center z-10">
                   <span className="font-bold text-[13px] uppercase tracking-wider">{pelea.tipo_pelea}</span>
                   <span className="bg-red-600 px-2 py-0.5 text-[11px] font-black italic">PELEA #{idx + 1}</span>
                 </div>
-  
+
                 <div className="p-4 flex flex-col flex-1 z-10">
                   {/* Fighters Section */}
                   <div className="flex gap-2 mb-4">
                     <div className="flex-1 bg-red-50 border border-red-200 p-2 rounded text-center relative">
-                       <span className="absolute -top-2 left-2 bg-red-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Rojo</span>
-                       <div className="font-black text-[14px] text-red-700 uppercase mt-1 truncate">{pelea.rojo_apellido}</div>
-                       {pelea.rojo_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.rojo_apodo}"</div>}
+                      <span className="absolute -top-2 left-2 bg-red-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Rojo</span>
+                      <div className="font-black text-[14px] text-red-700 uppercase mt-1 truncate">{pelea.rojo_apellido}</div>
+                      {pelea.rojo_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.rojo_apodo}"</div>}
                     </div>
                     <div className="flex items-center text-xs font-black text-gray-400 italic">VS</div>
                     <div className="flex-1 bg-blue-50 border border-blue-200 p-2 rounded text-center relative">
-                       <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Azul</span>
-                       <div className="font-black text-[14px] text-blue-700 uppercase mt-1 truncate">{pelea.azul_apellido}</div>
-                       {pelea.azul_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.azul_apodo}"</div>}
+                      <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Azul</span>
+                      <div className="font-black text-[14px] text-blue-700 uppercase mt-1 truncate">{pelea.azul_apellido}</div>
+                      {pelea.azul_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.azul_apodo}"</div>}
                     </div>
                   </div>
-  
+
                   {/* Annotation Area */}
                   <div className="grid grid-cols-2 gap-4 flex-1">
                     {/* Ganador */}
                     <div className="border border-dashed border-gray-400 p-2 rounded flex flex-col justify-center">
-                       <div className="text-[10px] font-black uppercase text-gray-500 mb-2">Ganador:</div>
-                       <div className="flex justify-around items-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="w-6 h-6 border-2 border-red-600 rounded-full"></div>
-                            <span className="text-[8px] font-bold uppercase text-red-600">Rojo</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="w-6 h-6 border-2 border-blue-600 rounded-full"></div>
-                            <span className="text-[8px] font-bold uppercase text-blue-600">Azul</span>
-                          </div>
-                       </div>
+                      <div className="text-[10px] font-black uppercase text-gray-500 mb-2">Ganador:</div>
+                      <div className="flex justify-around items-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-6 h-6 border-2 border-red-600 rounded-full"></div>
+                          <span className="text-[8px] font-bold uppercase text-red-600">Rojo</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-6 h-6 border-2 border-blue-600 rounded-full"></div>
+                          <span className="text-[8px] font-bold uppercase text-blue-600">Azul</span>
+                        </div>
+                      </div>
                     </div>
                     {/* Método y Round */}
                     <div className="flex flex-col gap-2">
-                       <div className="border border-dashed border-gray-400 p-2 rounded grid grid-cols-2 gap-x-3 gap-y-1.5">
-                          {['K.O', 'T.K.O', 'Decisión Unánime', 'Decisión Dividida'].map(m => (
-                            <div key={m} className="flex items-center gap-2">
-                               <div className="w-4 h-4 border border-gray-600 shrink-0"></div>
-                               <span className="text-[8px] font-bold uppercase leading-tight">{m}</span>
-                            </div>
-                          ))}
-                       </div>
-                       <div className="border border-dashed border-gray-400 p-2 rounded flex flex-col justify-center">
-                          <div className="text-[9px] font-black text-gray-400 flex flex-col gap-1.5 uppercase">
-                             <div className="flex justify-between items-end">Round: <div className="border-b border-gray-400 w-12 pb-px"></div></div>
-                             <div className="flex justify-between items-end">Tiempo: <div className="border-b border-gray-400 w-16 pb-px"></div></div>
+                      <div className="border border-dashed border-gray-400 p-2 rounded grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        {['K.O', 'T.K.O', 'Decisión Unánime', 'Decisión Dividida'].map(m => (
+                          <div key={m} className="flex items-center gap-2">
+                            <div className="w-4 h-4 border border-gray-600 shrink-0"></div>
+                            <span className="text-[8px] font-bold uppercase leading-tight">{m}</span>
                           </div>
-                       </div>
+                        ))}
+                      </div>
+                      <div className="border border-dashed border-gray-400 p-2 rounded flex flex-col justify-center">
+                        <div className="text-[9px] font-black text-gray-400 flex flex-col gap-1.5 uppercase">
+                          <div className="flex justify-between items-end">Round: <div className="border-b border-gray-400 w-12 pb-px"></div></div>
+                          <div className="flex justify-between items-end">Tiempo: <div className="border-b border-gray-400 w-16 pb-px"></div></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Footer Signature */}
                 <div className="border-t border-black p-1 text-center bg-gray-50">
-                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Firma de Oficial / Supervisor</span>
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Firma de Oficial / Supervisor</span>
                 </div>
               </div>
             ))}
@@ -1507,7 +1507,7 @@ function App() {
 
         {status.message && (
           <div className={`p-4 text-center text-sm font-bold text-white shadow-inner ${status.type === 'success' ? 'bg-green-500' :
-              status.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            status.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
             }`}>
             {status.message}
           </div>
@@ -1605,7 +1605,7 @@ function App() {
 
             <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-[#111] mb-2">Número Evento (Id)</label>
+                <label className="block text-sm font-semibold text-[#111] mb-2">Número de Evento</label>
                 <input name="numero_evento" value={formData.numero_evento} onChange={handleChange1} type="number" placeholder="Ej. 12" className="w-full p-2.5 text-sm border border-[#e1e8f0] rounded bg-white" min="0" autoComplete="off" />
               </div>
               <div>
@@ -1794,12 +1794,12 @@ function App() {
             </div>
             <div className="px-7 pb-6 flex justify-end gap-3 align-center">
               {confirmDialog.isAlert ? (
-                 <button
-                   onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
-                   className="px-6 py-2.5 bg-[#b91d22] hover:bg-[#a0181d] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm"
-                 >
-                   Aceptar
-                 </button>
+                <button
+                  onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
+                  className="px-6 py-2.5 bg-[#b91d22] hover:bg-[#a0181d] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm"
+                >
+                  Aceptar
+                </button>
               ) : (
                 <>
                   <button
