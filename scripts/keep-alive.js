@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Estas variables deben estar en el entorno (GitHub Secrets o .env local)
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+// Estas variables pueden venir de GitHub Secrets (SUPABASE_URL) o de un .env local (VITE_SUPABASE_URL)
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Error: Faltan las variables de entorno SUPABASE_URL o SUPABASE_ANON_KEY')
+  console.error('❌ Error: No se encontraron las variables de entorno de Supabase.')
   process.exit(1)
 }
 
@@ -15,18 +15,18 @@ async function keepAlive() {
   console.log('--- Iniciando Ping de Supabase ---')
   
   try {
-    // Actualizamos la tabla keep_alive para generar actividad de escritura
+    // Usamos upsert en lugar de update para asegurar que la fila con id: 1 exista.
+    // Si no existe, se inserta; si existe, se actualiza el last_ping.
     const { data, error } = await supabase
       .from('keep_alive')
-      .update({ last_ping: new Date().toISOString() })
-      .eq('id', 1)
+      .upsert({ id: 1, last_ping: new Date().toISOString() })
       .select()
 
     if (error) {
-      console.error('❌ Error al actualizar keep_alive:', error.message)
+      console.error('❌ Error al realizar upsert en keep_alive:', error.message)
       
-      // Si la tabla no existe, intentamos una consulta genérica para al menos despertar la API
-      console.log('Intentando consulta alternativa...')
+      // Fallback: Consulta genérica si falla el upsert
+      console.log('Intentando consulta alternativa (SELECT)...')
       const { error: errorAlt } = await supabase.from('ciudades').select('nombre').limit(1)
       
       if (errorAlt) {
@@ -36,7 +36,7 @@ async function keepAlive() {
         console.log('✅ Consulta alternativa exitosa.')
       }
     } else {
-      console.log('✅ Ping exitoso en tabla keep_alive:', data[0].last_ping)
+      console.log('✅ Ping exitoso (UPSERT) en tabla keep_alive:', data[0].last_ping)
     }
   } catch (err) {
     console.error('❌ Error inesperado:', err.message)
