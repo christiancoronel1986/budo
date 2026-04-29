@@ -1346,7 +1346,7 @@ function App() {
           {/* Grid de Tarjetas de Peleas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-2">
             {flattenPeleas.map((pelea, idx) => (
-              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:min-h-[265px] print:h-[265px] print:break-inside-avoid">
+              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:h-[270px] print:break-inside-avoid overflow-hidden">
                 {/* Background Watermark for Control Sheet too */}
                 {watermarkUrlFinal && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
@@ -1363,24 +1363,24 @@ function App() {
                 <div className="p-4 print:p-2 flex flex-col flex-1 z-10">
                   {/* Fighters Section */}
                   <div className="flex gap-2 mb-4 print:mb-2">
-                    <div className="flex-1 bg-red-50 border border-red-200 p-2 rounded text-center relative">
-                      <span className="absolute -top-2 left-2 bg-red-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Rojo</span>
-                      <div className="font-black text-[14px] text-red-700 uppercase mt-1 truncate">{pelea.rojo_apellido}</div>
-                      {pelea.rojo_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.rojo_apodo}"</div>}
+                    <div className="flex-1 bg-red-50 border border-red-200 p-1.5 rounded text-center relative">
+                      <span className="absolute -top-2 left-2 bg-red-600 text-white text-[7px] font-bold px-1 rounded uppercase">Rojo</span>
+                      <div className="font-black text-[13px] text-red-700 uppercase mt-0.5 truncate">{pelea.rojo_apellido}</div>
+                      {pelea.rojo_apodo && <div className="text-[8px] text-gray-500 italic">"{pelea.rojo_apodo}"</div>}
                     </div>
-                    <div className="flex items-center text-xs font-black text-gray-400 italic">VS</div>
-                    <div className="flex-1 bg-blue-50 border border-blue-200 p-2 rounded text-center relative">
-                      <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Azul</span>
-                      <div className="font-black text-[14px] text-blue-700 uppercase mt-1 truncate">{pelea.azul_apellido}</div>
-                      {pelea.azul_apodo && <div className="text-[9px] text-gray-500 italic mt-0.5">"{pelea.azul_apodo}"</div>}
+                    <div className="flex items-center text-[10px] font-black text-gray-400 italic">VS</div>
+                    <div className="flex-1 bg-blue-50 border border-blue-200 p-1.5 rounded text-center relative">
+                      <span className="absolute -top-2 right-2 bg-blue-600 text-white text-[7px] font-bold px-1 rounded uppercase">Azul</span>
+                      <div className="font-black text-[13px] text-blue-700 uppercase mt-0.5 truncate">{pelea.azul_apellido}</div>
+                      {pelea.azul_apodo && <div className="text-[8px] text-gray-500 italic">"{pelea.azul_apodo}"</div>}
                     </div>
                   </div>
 
                   {/* Annotation Area */}
-                  <div className="grid grid-cols-2 gap-4 flex-1">
+                  <div className="grid grid-cols-2 gap-2 print:gap-1.5 flex-1">
                     {/* Ganador */}
-                    <div className="border border-dashed border-gray-400 p-2 rounded flex flex-col justify-center">
-                      <div className="text-[10px] font-black uppercase text-gray-500 mb-2">Ganador:</div>
+                    <div className="border border-dashed border-gray-400 p-2 print:p-1 rounded flex flex-col justify-center">
+                      <div className="text-[10px] print:text-[9px] font-black uppercase text-gray-500 mb-1">Ganador:</div>
                       <div className="flex justify-around items-center">
                         <div className="flex flex-col items-center gap-1">
                           <div className="w-6 h-6 border-2 border-red-600 rounded-full"></div>
@@ -1393,17 +1393,17 @@ function App() {
                       </div>
                     </div>
                     {/* Método y Round */}
-                    <div className="flex flex-col gap-2">
-                      <div className="border border-dashed border-gray-400 p-2 rounded grid grid-cols-2 gap-x-3 gap-y-1.5">
+                    <div className="flex flex-col gap-1.5 print:gap-1">
+                      <div className="border border-dashed border-gray-400 p-1.5 print:p-1 rounded grid grid-cols-2 gap-x-2 gap-y-1">
                         {['K.O', 'T.K.O', 'Decisión Unánime', 'Decisión Dividida'].map(m => (
-                          <div key={m} className="flex items-center gap-2">
-                            <div className="w-4 h-4 border border-gray-600 shrink-0"></div>
-                            <span className="text-[8px] font-bold uppercase leading-tight">{m}</span>
+                          <div key={m} className="flex items-center gap-1.5">
+                            <div className="w-3.5 h-3.5 border border-gray-600 shrink-0"></div>
+                            <span className="text-[7.5px] font-bold uppercase leading-tight">{m}</span>
                           </div>
                         ))}
                       </div>
-                      <div className="border border-dashed border-gray-400 p-2 rounded flex flex-col justify-center">
-                        <div className="text-[9px] font-black text-gray-400 flex flex-col gap-1.5 uppercase">
+                      <div className="border border-dashed border-gray-400 p-1.5 print:p-1 rounded flex flex-col justify-center">
+                        <div className="text-[9px] print:text-[8.5px] font-black text-gray-400 flex flex-col gap-1 uppercase">
                           <div className="flex justify-between items-end">Round: <div className="border-b border-gray-400 w-12 pb-px"></div></div>
                           <div className="flex justify-between items-end">Tiempo: <div className="border-b border-gray-400 w-16 pb-px"></div></div>
                         </div>
@@ -1412,9 +1412,8 @@ function App() {
                   </div>
                 </div>
 
-                {/* Footer Signature */}
-                <div className="border-t border-black p-1 text-center bg-gray-50">
-                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Firma de Oficial / Supervisor</span>
+                <div className="border-t border-black p-1.5 text-center bg-gray-50 mt-auto">
+                  <span className="text-[7.5px] font-black text-gray-400 uppercase tracking-[0.2em]">Firma de Oficial / Supervisor</span>
                 </div>
               </div>
             ))}
