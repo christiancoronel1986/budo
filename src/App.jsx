@@ -1346,7 +1346,7 @@ function App() {
           {/* Grid de Tarjetas de Peleas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
             {flattenPeleas.map((pelea, idx) => (
-              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm overflow-hidden flex flex-col relative h-[300px] print:h-[280px]">
+              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:min-h-[280px] print:break-inside-avoid">
                 {/* Background Watermark for Control Sheet too */}
                 {watermarkUrlFinal && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
