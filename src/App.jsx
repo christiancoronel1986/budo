@@ -1329,7 +1329,7 @@ function App() {
 
         <div className="pt-24 pb-10 px-4 print:pt-2 print:pb-0 print:px-2 print-container">
           {/* Header Imprimible */}
-          <div className="bg-white border-2 border-black p-6 mb-6 print:p-3 print:mb-2 rounded-md shadow-sm flex items-center justify-between">
+          <div className="bg-white border-2 border-black p-6 mb-6 print:p-2 print:mb-1 rounded-md shadow-sm flex items-center justify-between">
             <div className="w-[130px] h-[100px] print:h-[70px] flex items-center justify-center">
               {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full max-w-full object-contain" />}
             </div>
@@ -1346,7 +1346,7 @@ function App() {
           {/* Grid de Tarjetas de Peleas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-2">
             {flattenPeleas.map((pelea, idx) => (
-              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:h-[255px] print:break-inside-avoid overflow-hidden">
+              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:h-[240px] print:break-inside-avoid overflow-hidden">
                 {/* Background Watermark for Control Sheet too */}
                 {watermarkUrlFinal && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
@@ -1380,15 +1380,15 @@ function App() {
                   <div className="grid grid-cols-2 gap-2 print:gap-1.5 flex-1">
                     {/* Ganador */}
                     <div className="border border-dashed border-gray-400 p-2 print:p-1 rounded flex flex-col justify-center">
-                      <div className="text-[10px] print:text-[9px] font-black uppercase text-gray-500 mb-1">Ganador:</div>
+                      <div className="text-[10px] print:text-[8px] font-black uppercase text-gray-500 mb-0.5">Ganador:</div>
                       <div className="flex justify-around items-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 border-2 border-red-600 rounded-full"></div>
-                          <span className="text-[8px] font-bold uppercase text-red-600">Rojo</span>
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="w-6 h-6 print:w-4 print:h-4 border-2 border-red-600 rounded-full"></div>
+                          <span className="text-[8px] print:text-[7px] font-bold uppercase text-red-600">Rojo</span>
                         </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-6 h-6 border-2 border-blue-600 rounded-full"></div>
-                          <span className="text-[8px] font-bold uppercase text-blue-600">Azul</span>
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="w-6 h-6 print:w-4 print:h-4 border-2 border-blue-600 rounded-full"></div>
+                          <span className="text-[8px] print:text-[7px] font-bold uppercase text-blue-600">Azul</span>
                         </div>
                       </div>
                     </div>
@@ -1412,8 +1412,8 @@ function App() {
                   </div>
                 </div>
 
-                <div className="border-t border-black p-1.5 text-center bg-gray-50 mt-auto">
-                  <span className="text-[7.5px] font-black text-gray-400 uppercase tracking-[0.2em]">Firma de Oficial / Supervisor</span>
+                <div className="border-t border-black p-1 text-center bg-gray-50 mt-auto">
+                  <span className="text-[7.5px] print:text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Firma de Oficial / Supervisor</span>
                 </div>
               </div>
             ))}
