@@ -147,6 +147,24 @@ function App() {
     localStorage.setItem('budo_app_data', JSON.stringify(appData));
   }, [currentStep, formData, categorias, fightFormsData, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, savedEventId, logoMode, logoUrlInput, logo2Mode, logo2UrlInput, watermarkMode, watermarkUrlInput, printDesign]);
 
+  // Efecto para actualizar el título del documento (útil para el nombre del PDF al guardar)
+  useEffect(() => {
+    let title = 'Budo Strike';
+    const eventInfo = `${formData.nombre_evento}${formData.numero_evento ? ` - ${formData.numero_evento}` : ''}`;
+
+    if (isPrintMode) {
+      title = `Tarjetas de Jueces - ${eventInfo}`;
+    } else if (isResultMode) {
+      title = `Tarjetas de Resultados - ${eventInfo}`;
+    } else if (isControlMode) {
+      title = `Control de Resultados - ${eventInfo}`;
+    } else if (isChecklistMode) {
+      title = `Lista de Chequeo - ${eventInfo}`;
+    }
+
+    document.title = title;
+  }, [isPrintMode, isResultMode, isControlMode, isChecklistMode, formData.nombre_evento, formData.numero_evento]);
+
   // Guardar evento ID para limpieza si el navegador se cierra
   useEffect(() => {
     const handleBeforeUnload = () => {
