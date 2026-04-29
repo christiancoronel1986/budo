@@ -26,12 +26,23 @@
     height: 100% !important;
   }
   /* Force fixed-height containers to fill the page within 5mm margins */
-  .hoja-impresion-carta, .hoja-resultado-carta {
+  .hoja-impresion-carta {
     width: 100% !important;
     height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
     display: grid !important;
+    box-sizing: border-box !important;
+  }
+  
+  .hoja-resultado-carta {
+    width: 100% !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5mm !important;
     box-sizing: border-box !important;
   }
   

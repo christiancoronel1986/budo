@@ -1486,7 +1486,7 @@ function App() {
             </button>
           </div>
         </div>
-        <div className="resultado-content" style={{ paddingTop: '100px', paddingBottom: '40px' }}>
+        <div className="resultado-content pt-[100px] pb-[40px] print:p-0 print:m-0">
           {hojasHTML}
         </div>
       </div>
