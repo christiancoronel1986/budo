@@ -1329,24 +1329,24 @@ function App() {
 
         <div className="pt-24 pb-10 px-4 print-container">
           {/* Header Imprimible */}
-          <div className="bg-white border-2 border-black p-6 mb-6 rounded-md shadow-sm flex items-center justify-between">
-            <div className="w-[130px] h-[100px] flex items-center justify-center">
+          <div className="bg-white border-2 border-black p-6 mb-6 print:p-3 print:mb-2 rounded-md shadow-sm flex items-center justify-between">
+            <div className="w-[130px] h-[100px] print:h-[70px] flex items-center justify-center">
               {logo1UrlFinal && <img src={logo1UrlFinal} alt="Logo 1" className="max-h-full max-w-full object-contain" />}
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
-              <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
-              <div className="mt-2 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
+              <h1 className="text-2xl print:text-xl font-black text-black uppercase mb-1">{formData.nombre_evento} {formData.numero_evento ? `#${formData.numero_evento}` : ''}</h1>
+              <p className="text-sm print:text-xs font-bold text-gray-600 uppercase tracking-widest">{formatFriendlyDate(formData.fecha)} | {formData.ciudad} | {formData.disciplina}</p>
+              <div className="mt-2 print:mt-1 text-[11px] font-black text-red-600 border border-red-600 inline-block px-4 py-1 rounded-sm uppercase">Control de Resultados</div>
             </div>
-            <div className="w-[130px] h-[100px] flex items-center justify-center">
+            <div className="w-[130px] h-[100px] print:h-[70px] flex items-center justify-center">
               {logo2UrlFinal && <img src={logo2UrlFinal} alt="Logo 2" className="max-h-full max-w-full object-contain" />}
             </div>
           </div>
 
           {/* Grid de Tarjetas de Peleas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-2">
             {flattenPeleas.map((pelea, idx) => (
-              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:min-h-[280px] print:break-inside-avoid">
+              <div key={`control-card-${idx}`} className="bg-white border-2 border-black rounded-sm flex flex-col relative min-h-[300px] print:min-h-[265px] print:h-[265px] print:break-inside-avoid">
                 {/* Background Watermark for Control Sheet too */}
                 {watermarkUrlFinal && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0 grayscale">
@@ -1360,9 +1360,9 @@ function App() {
                   <span className="bg-red-600 px-2 py-0.5 text-[11px] font-black italic">PELEA #{idx + 1}</span>
                 </div>
 
-                <div className="p-4 flex flex-col flex-1 z-10">
+                <div className="p-4 print:p-2 flex flex-col flex-1 z-10">
                   {/* Fighters Section */}
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex gap-2 mb-4 print:mb-2">
                     <div className="flex-1 bg-red-50 border border-red-200 p-2 rounded text-center relative">
                       <span className="absolute -top-2 left-2 bg-red-600 text-white text-[8px] font-bold px-1 px-1 rounded uppercase">Rojo</span>
                       <div className="font-black text-[14px] text-red-700 uppercase mt-1 truncate">{pelea.rojo_apellido}</div>
