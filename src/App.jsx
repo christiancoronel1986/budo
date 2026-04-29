@@ -1162,7 +1162,7 @@ function App() {
           </div>
         </div>
 
-        <div className="pt-24 pb-10 px-4 max-w-5xl mx-auto print:pt-6 print:pb-0 print:max-w-none">
+        <div className="pt-24 pb-10 px-4 print-container">
           {paginas.map((grupo, pIdx) => (
             <div key={`page-${pIdx}`} className={`${pIdx > 0 ? 'print:pt-8' : ''} ${pIdx < paginas.length - 1 ? 'print:page-break-after-always mb-12 print:mb-0' : ''}`}>
               {/* Header imprimible - Se repite en cada página */}
@@ -1266,7 +1266,7 @@ function App() {
           </div>
         </div>
 
-        <div className="pt-24 pb-10 px-4 max-w-5xl mx-auto print:pt-0 print:pb-0 print:max-w-none">
+        <div className="pt-24 pb-10 px-4 print-container">
           {/* Header Imprimible */}
           <div className="bg-white border-2 border-black p-6 mb-6 rounded-md shadow-sm flex items-center justify-between">
             <div className="w-[130px] h-[100px] flex items-center justify-center">

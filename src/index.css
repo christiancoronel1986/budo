@@ -3,11 +3,14 @@
 @media print {
   @page {
     size: letter portrait;
-    margin: 0; 
+    margin: 5mm;
   }
   body, html {
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
     background-color: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -15,43 +18,77 @@
   .no-print {
     display: none !important;
   }
-  .resultado-wrapper {
+  .resultado-wrapper, .impresion-preview-wrapper, .control-mode-wrapper, .checklist-mode-wrapper {
     background: white !important;
-    min-height: unset !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
   }
-  .resultado-content {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+  /* Force fixed-height containers to fill the page within 5mm margins */
+  .hoja-impresion-carta, .hoja-resultado-carta {
+    width: 100% !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Flexible container for documents that can span multiple pages (Checklist, Control) */
+  .print-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .hoja-impresion-carta:not(:last-child), 
+  .hoja-resultado-carta:not(:last-child) {
+    page-break-after: always !important;
   }
 }
+
+
 
 /* Base setup for judge scorecards (3x3 grid per page) */
 .hoja-impresion-carta {
-  width: 215.9mm;
-  height: 279.4mm;
-  padding: 8mm;
+  width: 205.9mm;
+  height: 269.4mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: stretch;
+  justify-items: stretch;
+  gap: 0;
   margin: 0 auto;
   background: white;
-  page-break-after: always;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(3, minmax(0, 1fr));
   box-sizing: border-box;
 }
 
+
+
 /* Base setup for result cards (2 per page, stacked vertically) */
 .hoja-resultado-carta {
-  width: 215.9mm;
-  height: 279.4mm;
-  padding: 12mm;
-  margin: 0 auto;
-  background: white;
-  page-break-after: always;
+  width: 205.9mm;
+  height: 269.4mm;
   display: flex;
   flex-direction: column;
-  gap: 10mm;
+  gap: 5mm;
+  margin: 0 auto;
+  padding: 5mm;
+  background: white;
   box-sizing: border-box;
 }
+
+/* Flexible container for documents that can span multiple pages (Checklist, Control) */
+.print-container {
+  width: 205.9mm;
+  margin: 0 auto;
+  background: white;
+  box-sizing: border-box;
+}
+
 
 @media screen {
   /* En pantalla, agregamos estilos para previsualizar como hoja física la hoja de impresion */
