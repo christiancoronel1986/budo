@@ -14,16 +14,19 @@ const formatFriendlyDate = (fechaISO) => {
 };
 
 function App() {
+  // 1. Cargar datos iniciales de localStorage para persistencia
+  const savedData = JSON.parse(localStorage.getItem('budo_app_data') || '{}');
+
   // --------- ESTADOS COMPARTIDOS ---------
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(savedData.currentStep || 1)
   const [status, setStatus] = useState({ type: '', message: '' })
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [isPrintMode, setIsPrintMode] = useState(false)
-  const [isResultMode, setIsResultMode] = useState(false)
-  const [isControlMode, setIsControlMode] = useState(false)
-  const [isChecklistMode, setIsChecklistMode] = useState(false)
-  const [printDesign, setPrintDesign] = useState(1)
-  const [savedEventId, setSavedEventId] = useState(null) // ID del evento guardado actualmente
+  const [isSuccess, setIsSuccess] = useState(savedData.isSuccess || false)
+  const [isPrintMode, setIsPrintMode] = useState(savedData.isPrintMode || false)
+  const [isResultMode, setIsResultMode] = useState(savedData.isResultMode || false)
+  const [isControlMode, setIsControlMode] = useState(savedData.isControlMode || false)
+  const [isChecklistMode, setIsChecklistMode] = useState(savedData.isChecklistMode || false)
+  const [printDesign, setPrintDesign] = useState(savedData.printDesign || 1)
+  const [savedEventId, setSavedEventId] = useState(savedData.savedEventId || null) // ID del evento guardado actualmente
 
   // --------- ESTADO MODAL CUSTOM ---------
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: null, isAlert: false })
@@ -34,7 +37,7 @@ function App() {
   const hoy = new Date().toLocaleDateString('en-CA')
 
   // --------- ESTADOS STEP 1: EVENTO ---------
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(savedData.formData || {
     nombre_evento: '',
     numero_evento: '',
     disciplina: '',
@@ -43,22 +46,22 @@ function App() {
   })
 
   // Híbrido de Logo 1
-  const [logoMode, setLogoMode] = useState('url')
+  const [logoMode, setLogoMode] = useState(savedData.logoMode || 'url')
   const [logoFile, setLogoFile] = useState(null)
-  const [logoUrlInput, setLogoUrlInput] = useState('')
+  const [logoUrlInput, setLogoUrlInput] = useState(savedData.logoUrlInput || '')
 
   // Híbrido de Logo 2
-  const [logo2Mode, setLogo2Mode] = useState('url')
+  const [logo2Mode, setLogo2Mode] = useState(savedData.logo2Mode || 'url')
   const [logo2File, setLogo2File] = useState(null)
-  const [logo2UrlInput, setLogo2UrlInput] = useState('')
+  const [logo2UrlInput, setLogo2UrlInput] = useState(savedData.logo2UrlInput || '')
 
   // Híbrido Watermark
-  const [watermarkMode, setWatermarkMode] = useState('url')
+  const [watermarkMode, setWatermarkMode] = useState(savedData.watermarkMode || 'url')
   const [watermarkFile, setWatermarkFile] = useState(null)
-  const [watermarkUrlInput, setWatermarkUrlInput] = useState('')
+  const [watermarkUrlInput, setWatermarkUrlInput] = useState(savedData.watermarkUrlInput || '')
 
   // Lista dinámica de categorías creadas por el usuario en el Paso 1
-  const [categorias, setCategorias] = useState([
+  const [categorias, setCategorias] = useState(savedData.categorias || [
     { id: Date.now(), tipo: '', cant: 1 }
   ])
 
@@ -79,13 +82,27 @@ function App() {
 
   // --------- ESTADOS WIZARD PELEADORES (Pasos 2 al N) ---------
   // Array matriz de datos. Cada posición contiene el array de peleas de una categoría particular.
-  const [fightFormsData, setFightFormsData] = useState([])
+  const [fightFormsData, setFightFormsData] = useState(savedData.fightFormsData || [])
 
 
-  // --------- EFECTOS DE MONTAJE ---------
+  // --------- EFECTOS DE MONTAJE Y PERSISTENCIA ---------
   useEffect(() => {
     fetchCiudades()
     fetchNombresEventos()
+
+    // Sincronizar estado inicial con el hash de la URL si existe (prioridad sobre localStorage para navegación)
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      setIsPrintMode(hash === 'impresion');
+      setIsResultMode(hash === 'resultados');
+      setIsControlMode(hash === 'control-resultados');
+      setIsChecklistMode(hash === 'checklist');
+      if (hash === 'finalizado') setIsSuccess(true);
+      else if (hash.startsWith('paso-')) {
+        const step = parseInt(hash.split('-')[1]);
+        if (!isNaN(step)) { setCurrentStep(step); setIsSuccess(false); }
+      }
+    }
 
     // Detectar si la sesión anterior se cerró sin limpiar (cierre de tab/navegador)
     // sessionStorage sobrevive refresh pero se limpia al cerrar el tab
@@ -105,6 +122,30 @@ function App() {
     // Marcar sesión activa (se borra a al cerrar el tab)
     sessionStorage.setItem('activeSession', 'true')
   }, [])
+
+  // Efecto para guardar datos en localStorage automáticamente ante cualquier cambio
+  useEffect(() => {
+    const appData = {
+      currentStep,
+      formData,
+      categorias,
+      fightFormsData,
+      isSuccess,
+      isPrintMode,
+      isResultMode,
+      isControlMode,
+      isChecklistMode,
+      savedEventId,
+      logoMode,
+      logoUrlInput,
+      logo2Mode,
+      logo2UrlInput,
+      watermarkMode,
+      watermarkUrlInput,
+      printDesign
+    };
+    localStorage.setItem('budo_app_data', JSON.stringify(appData));
+  }, [currentStep, formData, categorias, fightFormsData, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, savedEventId, logoMode, logoUrlInput, logo2Mode, logo2UrlInput, watermarkMode, watermarkUrlInput, printDesign]);
 
   // Guardar evento ID para limpieza si el navegador se cierra
   useEffect(() => {
@@ -528,6 +569,8 @@ function App() {
       setSavedEventId(null)
       localStorage.removeItem('pendingCleanupEventId')
     }
+    // Limpiar persistencia local
+    localStorage.removeItem('budo_app_data')
     setIsSuccess(false)
     setIsPrintMode(false)
     setIsResultMode(false)
