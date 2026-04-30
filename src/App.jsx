@@ -149,7 +149,7 @@ function App() {
 
   // Efecto para actualizar el título del documento (útil para el nombre del PDF al guardar)
   useEffect(() => {
-    let title = 'Budo Strike';
+    let title = 'Generador de Tarjetas';
     const eventInfo = `${formData.nombre_evento}${formData.numero_evento ? ` - ${formData.numero_evento}` : ''}`;
 
     if (isPrintMode) {
