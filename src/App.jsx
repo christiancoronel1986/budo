@@ -218,7 +218,7 @@ function App() {
       const { data, error } = await supabase
         .from('eventos')
         .select('*, peleas(*)')
-        .order('id', { ascending: false });
+        .order('created_at', { ascending: false });
       if (error) throw error;
       if (data) setHistoryEvents(data);
     } catch (err) {
@@ -228,6 +228,12 @@ function App() {
       setIsLoadingHistory(false);
     }
   };
+
+  useEffect(() => {
+    if (isHistoryMode) {
+      fetchHistorialEventos();
+    }
+  }, [isHistoryMode]);
 
   const cargarEventoDesdeHistorial = (evento, modoAccion) => {
     setFormData({
