@@ -102,8 +102,16 @@ function App() {
       setIsControlMode(hash === 'control-resultados');
       setIsChecklistMode(hash === 'checklist');
       setIsHistoryMode(hash === 'historial');
-      if (hash === 'finalizado') setIsSuccess(true);
-      else if (hash.startsWith('paso-')) {
+      if (hash === 'finalizado') {
+        const hasData = savedData.savedEventId || (savedData.fightFormsData && savedData.fightFormsData.length > 0);
+        if (hasData) {
+          setIsSuccess(true);
+        } else {
+          setIsSuccess(false);
+          setCurrentStep(1);
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      } else if (hash.startsWith('paso-')) {
         const step = parseInt(hash.split('-')[1]);
         if (!isNaN(step)) { setCurrentStep(step); setIsSuccess(false); }
       }
@@ -194,7 +202,14 @@ function App() {
       setIsHistoryMode(hash === 'historial');
 
       if (hash === 'finalizado') {
-        setIsSuccess(true);
+        const hasData = savedEventId || (fightFormsData && fightFormsData.length > 0);
+        if (hasData) {
+          setIsSuccess(true);
+        } else {
+          setIsSuccess(false);
+          setCurrentStep(1);
+          window.history.replaceState({}, '', window.location.pathname);
+        }
       } else if (hash.startsWith('paso-')) {
         const step = parseInt(hash.split('-')[1]);
         if (!isNaN(step)) {
@@ -710,6 +725,7 @@ function App() {
     setFightFormsData([])
     setFormErrors([])
     setCurrentStep(1)
+    window.history.replaceState({}, '', window.location.pathname);
   }
 
   // ==========================================
