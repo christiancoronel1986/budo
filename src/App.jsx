@@ -38,6 +38,52 @@ function App() {
   const showAlert = (message) => setConfirmDialog({ isOpen: true, message, onConfirm: null, isAlert: true })
   const showConfirm = (message, onConfirm) => setConfirmDialog({ isOpen: true, message, onConfirm, isAlert: false })
 
+  const renderConfirmModal = () => {
+    if (!confirmDialog.isOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-[2px] px-4 animate-in fade-in duration-200">
+        <div className="bg-[#2a2a2a] border border-[#444] rounded-[24px] shadow-2xl w-full max-w-[420px] overflow-hidden py-1">
+          <div className="px-7 pt-6 pb-5">
+            <h3 className="text-white font-bold text-lg mb-4 leading-none">
+              localhost:5173 dice
+            </h3>
+            <p className="text-[#ddd] text-[15px] leading-relaxed mb-8">
+              {confirmDialog.message}
+            </p>
+          </div>
+          <div className="px-7 pb-6 flex justify-end gap-3 align-center">
+            {confirmDialog.isAlert ? (
+              <button
+                onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
+                className="px-6 py-2.5 bg-[#b91d22] hover:bg-[#a0181d] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm cursor-pointer"
+              >
+                Aceptar
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    if (confirmDialog.onConfirm) confirmDialog.onConfirm();
+                    setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false });
+                  }}
+                  className="px-6 py-2.5 bg-[#c2d6ff] hover:bg-[#a3bffc] text-[#0f346e] border border-[#7f9cf0] ring-2 ring-white/10 rounded-full font-bold text-[15px] transition-colors shadow-sm cursor-pointer"
+                >
+                  Aceptar
+                </button>
+                <button
+                  onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
+                  className="px-6 py-2.5 bg-[#004f8f] hover:bg-[#003d73] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const hoy = new Date().toLocaleDateString('en-CA')
 
   // --------- ESTADOS STEP 1: EVENTO ---------
@@ -1751,6 +1797,7 @@ function App() {
             </div>
           )}
         </div>
+        {renderConfirmModal()}
       </div>
     );
   }
@@ -2052,48 +2099,7 @@ function App() {
       </div>
 
       {/* CUSTOM ALERT / CONFIRM MODAL */}
-      {confirmDialog.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-[2px] px-4 animate-in fade-in duration-200">
-          <div className="bg-[#2a2a2a] border border-[#444] rounded-[24px] shadow-2xl w-full max-w-[420px] overflow-hidden py-1">
-            <div className="px-7 pt-6 pb-5">
-              <h3 className="text-white font-bold text-lg mb-4 leading-none">
-                localhost:5173 dice
-              </h3>
-              <p className="text-[#ddd] text-[15px] leading-relaxed mb-8">
-                {confirmDialog.message}
-              </p>
-            </div>
-            <div className="px-7 pb-6 flex justify-end gap-3 align-center">
-              {confirmDialog.isAlert ? (
-                <button
-                  onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
-                  className="px-6 py-2.5 bg-[#b91d22] hover:bg-[#a0181d] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm"
-                >
-                  Aceptar
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      if (confirmDialog.onConfirm) confirmDialog.onConfirm();
-                      setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false });
-                    }}
-                    className="px-6 py-2.5 bg-[#c2d6ff] hover:bg-[#a3bffc] text-[#0f346e] border border-[#7f9cf0] ring-2 ring-white/10 rounded-full font-bold text-[15px] transition-colors shadow-sm"
-                  >
-                    Aceptar
-                  </button>
-                  <button
-                    onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: null, isAlert: false })}
-                    className="px-6 py-2.5 bg-[#004f8f] hover:bg-[#003d73] text-white rounded-full font-bold text-[15px] transition-colors shadow-sm"
-                  >
-                    Cancelar
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {renderConfirmModal()}
 
     </div>
   )
