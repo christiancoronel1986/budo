@@ -482,7 +482,10 @@ function App() {
         finalLogoUrl = publicUrlData.publicUrl
       }
 
-      if (logo2Mode === 'url' && logo2UrlInput.trim()) {
+      // 3. Logo 2 (Secundario)
+      if (logo2Mode === 'cramm') {
+        finalLogo2Url = '/logo_cramm.png'
+      } else if (logo2Mode === 'url' && logo2UrlInput.trim()) {
         finalLogo2Url = logo2UrlInput.trim()
       } else if (logo2Mode === 'file' && logo2File) {
         setStatus({ type: 'loading', message: 'Procesando segundo archivos...' })
@@ -797,8 +800,8 @@ function App() {
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs font-bold text-[#555]">LOGO 2</span>
                 <div className="w-[100px] h-[100px] border border-[#ccc] bg-white rounded flex justify-center items-center overflow-hidden">
-                  {(logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File) ?
-                    <img src={logo2Mode === 'url' ? logo2UrlInput : URL.createObjectURL(logo2File)} alt="L2" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
+                  {(logo2Mode === 'cramm' || (logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File)) ?
+                    <img src={logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : URL.createObjectURL(logo2File))} alt="L2" className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-gray-400">Ninguno</span>}
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1">
@@ -891,7 +894,7 @@ function App() {
     const hojasHTML = [];
 
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
-    const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
+    const logo2UrlFinal = logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null));
     const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
     const hasLogos = logo1UrlFinal || logo2UrlFinal;
 
@@ -1188,7 +1191,7 @@ function App() {
 
   if (isChecklistMode) {
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
-    const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
+    const logo2UrlFinal = logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null));
 
     const flattenPeleas = [];
     fightFormsData.forEach((grupoCategoria) => {
@@ -1307,7 +1310,7 @@ function App() {
 
   if (isControlMode) {
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
-    const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
+    const logo2UrlFinal = logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null));
     const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
 
     const flattenPeleas = [];
@@ -1425,7 +1428,7 @@ function App() {
 
   if (isResultMode) {
     const logo1UrlFinal = logoMode === 'cramm' ? '/logo_cramm.png' : (logoMode === 'url' ? logoUrlInput : (logoFile ? URL.createObjectURL(logoFile) : null));
-    const logo2UrlFinal = logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null);
+    const logo2UrlFinal = logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : (logo2File ? URL.createObjectURL(logo2File) : null));
     const watermarkUrlFinal = watermarkMode === 'cramm' ? '/logo_cramm.png' : (watermarkMode === 'url' ? watermarkUrlInput : (watermarkFile ? URL.createObjectURL(watermarkFile) : null));
     const flattenPeleas = [];
     fightFormsData.forEach((grupoCategoria) => {
@@ -1728,9 +1731,10 @@ function App() {
               {/* Logo 2 */}
               <div className="bg-[#f8f9fa] p-4 rounded border border-[#eee]">
                 <label className="block text-sm font-bold text-[#111] mb-2 uppercase tracking-wide text-gray-500">Logo Secundario (Opcional)</label>
-                <div className="grid grid-cols-2 mb-3 border-b border-[#e1e8f0]">
+                <div className="grid grid-cols-3 mb-3 border-b border-[#e1e8f0]">
                   <button type="button" onClick={() => setLogo2Mode('url')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logo2Mode === 'url' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>PEGAR URL</button>
                   <button type="button" onClick={() => setLogo2Mode('file')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logo2Mode === 'file' ? 'border-b-2 border-[#b91d22] text-[#111]' : 'text-gray-400 hover:text-gray-600'}`}>ARCHIVO</button>
+                  <button type="button" onClick={() => setLogo2Mode('cramm')} className={`py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer transition-colors outline-none ${logo2Mode === 'cramm' ? 'border-b-2 border-[#b91d22] text-[#b91d22]' : 'text-gray-400 hover:text-[#b91d22]'}`}>LOGO CRAMM</button>
                 </div>
 
                 {logo2Mode === 'url' && (
@@ -1749,9 +1753,9 @@ function App() {
                   </div>
                 )}
 
-                {((logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File)) && (
+                {(logo2Mode === 'cramm' || (logo2Mode === 'url' && logo2UrlInput) || (logo2Mode === 'file' && logo2File)) && (
                   <div className="mt-3 w-full h-[150px] border border-[#e1e8f0] rounded-md flex justify-center items-center overflow-hidden bg-white shadow-sm p-2">
-                    <img src={logo2Mode === 'url' ? logo2UrlInput : URL.createObjectURL(logo2File)} alt="Logo Preview" className="max-w-full max-h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
+                    <img src={logo2Mode === 'cramm' ? '/logo_cramm.png' : (logo2Mode === 'url' ? logo2UrlInput : URL.createObjectURL(logo2File))} alt="Logo Preview" className="max-w-full max-h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
                   </div>
                 )}
               </div>
