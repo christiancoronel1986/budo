@@ -914,17 +914,17 @@ function App() {
           {Array.from({ length: 9 }).map((_, indexCelda) => {
             const pelea = peleasPagina[indexCelda] || { tipo_pelea: '', ordenEnCategoria: '', rojo_nombre: '', rojo_apellido: '', azul_nombre: '', azul_apellido: '' };
             return (
-              <div key={`celda-${i}-${indexCelda}`} className={`w-full h-full flex flex-col text-[10px] font-sans box-border relative overflow-hidden bg-white ${printDesign === 3 ? 'border-[3px] border-black pt-1.5 px-1.5 pb-0 print:border-black'
+              <div key={`celda-${i}-${indexCelda}`} className={`w-full h-full flex flex-col text-[10px] font-sans box-border relative overflow-hidden bg-white isolate ${printDesign === 3 ? 'border-[3px] border-black pt-1.5 px-1.5 pb-0 print:border-black'
                 : 'border border-gray-400 pt-3 pb-2 px-3 print:border-[#111]'
                 }`}>
                 {watermarkUrlFinal && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.18] pointer-events-none z-[0]">
-                    <img src={watermarkUrlFinal} alt="Watermark" className="max-w-[75%] max-h-[75%] object-contain mix-blend-multiply grayscale" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.15] pointer-events-none z-0">
+                    <img src={watermarkUrlFinal} alt="Watermark" className="max-w-[70%] max-h-[70%] object-contain mix-blend-multiply grayscale" />
                   </div>
                 )}
                 {/* SELECTOR MÚLTIPLE DE DISEÑOS */}
                 {printDesign === 1 && (
-                  <div className="w-full h-full flex flex-col">
+                  <div className="w-full h-full flex flex-col relative z-10">
                     {/* Cabecera Tarjeta */}
                     <div className="flex justify-between items-start mb-1.5">
                       <div className="w-[40%] flex justify-left items-center h-12 mt-0.5 gap-2 pl-0.5">
@@ -1003,7 +1003,7 @@ function App() {
 
                 {/* DISEÑO 2: MINIMALISTA LÍNEAS */}
                 {printDesign === 2 && (
-                  <div className="w-full h-full flex flex-col px-1 justify-between pb-1">
+                  <div className="w-full h-full flex flex-col px-1 justify-between pb-1 relative z-10">
                     <div>
                       <div className="flex justify-between items-center mb-0 border-b border-black pb-1.5">
                         <div className="w-[30%] flex gap-1.5 h-7">
@@ -1070,7 +1070,7 @@ function App() {
 
                 {/* DISEÑO 3: AGRESIVO / ESTILO MMA */}
                 {printDesign === 3 && (
-                  <div className="w-full h-full flex flex-col text-black print:-webkit-print-color-adjust: exact print:bg-white box-border justify-between">
+                  <div className="w-full h-full flex flex-col text-black print:-webkit-print-color-adjust: exact print:bg-white box-border justify-between relative z-10">
                     <div>
                       <div className="flex justify-between items-center mb-1 border-b-[2px] border-black pb-1 pt-0.5">
                         <div className="w-[35%] flex justify-start items-center h-10 gap-2">
