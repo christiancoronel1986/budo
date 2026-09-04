@@ -25,6 +25,10 @@ function App() {
   const [isResultMode, setIsResultMode] = useState(savedData.isResultMode || false)
   const [isControlMode, setIsControlMode] = useState(savedData.isControlMode || false)
   const [isChecklistMode, setIsChecklistMode] = useState(savedData.isChecklistMode || false)
+  const [isHistoryMode, setIsHistoryMode] = useState(savedData.isHistoryMode || false)
+  const [historyEvents, setHistoryEvents] = useState([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [editingEventId, setEditingEventId] = useState(savedData.editingEventId || null)
   const [printDesign, setPrintDesign] = useState(savedData.printDesign || 1)
   const [savedEventId, setSavedEventId] = useState(savedData.savedEventId || null) // ID del evento guardado actualmente
 
@@ -90,37 +94,20 @@ function App() {
     fetchCiudades()
     fetchNombresEventos()
 
-    // Sincronizar estado inicial con el hash de la URL si existe (prioridad sobre localStorage para navegación)
+    // Sincronizar estado inicial con el hash de la URL si existe
     const hash = window.location.hash.replace('#', '');
     if (hash) {
       setIsPrintMode(hash === 'impresion');
       setIsResultMode(hash === 'resultados');
       setIsControlMode(hash === 'control-resultados');
       setIsChecklistMode(hash === 'checklist');
+      setIsHistoryMode(hash === 'historial');
       if (hash === 'finalizado') setIsSuccess(true);
       else if (hash.startsWith('paso-')) {
         const step = parseInt(hash.split('-')[1]);
         if (!isNaN(step)) { setCurrentStep(step); setIsSuccess(false); }
       }
     }
-
-    // Detectar si la sesión anterior se cerró sin limpiar (cierre de tab/navegador)
-    // sessionStorage sobrevive refresh pero se limpia al cerrar el tab
-    const wasRefreshed = sessionStorage.getItem('activeSession')
-    const pendingCleanup = localStorage.getItem('pendingCleanupEventId')
-
-    if (pendingCleanup && !wasRefreshed) {
-      // El tab fue cerrado y reabierto → limpiar
-      cleanupEvento(parseInt(pendingCleanup)).then(() => {
-        localStorage.removeItem('pendingCleanupEventId')
-      })
-    } else if (pendingCleanup && wasRefreshed) {
-      // Fue un refresh → no borrar, solo recargar
-      localStorage.removeItem('pendingCleanupEventId')
-    }
-
-    // Marcar sesión activa (se borra a al cerrar el tab)
-    sessionStorage.setItem('activeSession', 'true')
   }, [])
 
   // Efecto para guardar datos en localStorage automáticamente ante cualquier cambio
@@ -135,7 +122,9 @@ function App() {
       isResultMode,
       isControlMode,
       isChecklistMode,
+      isHistoryMode,
       savedEventId,
+      editingEventId,
       logoMode,
       logoUrlInput,
       logo2Mode,
@@ -145,14 +134,16 @@ function App() {
       printDesign
     };
     localStorage.setItem('budo_app_data', JSON.stringify(appData));
-  }, [currentStep, formData, categorias, fightFormsData, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, savedEventId, logoMode, logoUrlInput, logo2Mode, logo2UrlInput, watermarkMode, watermarkUrlInput, printDesign]);
+  }, [currentStep, formData, categorias, fightFormsData, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, isHistoryMode, savedEventId, editingEventId, logoMode, logoUrlInput, logo2Mode, logo2UrlInput, watermarkMode, watermarkUrlInput, printDesign]);
 
   // Efecto para actualizar el título del documento (útil para el nombre del PDF al guardar)
   useEffect(() => {
     let title = 'Generador de Tarjetas';
     const eventInfo = `${formData.nombre_evento}${formData.numero_evento ? ` - ${formData.numero_evento}` : ''}`;
 
-    if (isPrintMode) {
+    if (isHistoryMode) {
+      title = `Historial de Eventos - ${eventInfo || 'Budo'}`;
+    } else if (isPrintMode) {
       title = `Tarjetas de Jueces - ${eventInfo}`;
     } else if (isResultMode) {
       title = `Tarjetas de Resultados - ${eventInfo}`;
@@ -163,30 +154,20 @@ function App() {
     }
 
     document.title = title;
-  }, [isPrintMode, isResultMode, isControlMode, isChecklistMode, formData.nombre_evento, formData.numero_evento]);
-
-  // Guardar evento ID para limpieza si el navegador se cierra
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (savedEventId) {
-        localStorage.setItem('pendingCleanupEventId', savedEventId.toString())
-      }
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [savedEventId])
+  }, [isHistoryMode, isPrintMode, isResultMode, isControlMode, isChecklistMode, formData.nombre_evento, formData.numero_evento]);
 
   // --------- MEJORAS DE NAVEGACION (SCROLL Y BOTON ATRAS) ---------
 
   // 1. Efecto para Scroll al inicio al cambiar de vista o paso
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode]);
+  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, isHistoryMode]);
 
   // 2. Sincronizar estado con el Historial del Navegador (Hash)
   useEffect(() => {
     let hash = '';
-    if (isPrintMode) hash = 'impresion';
+    if (isHistoryMode) hash = 'historial';
+    else if (isPrintMode) hash = 'impresion';
     else if (isResultMode) hash = 'resultados';
     else if (isControlMode) hash = 'control-resultados';
     else if (isChecklistMode) hash = 'checklist';
@@ -194,11 +175,11 @@ function App() {
     else if (currentStep > 1) hash = `paso-${currentStep}`;
     else hash = 'registro';
 
-    // Evitar duplicar si el hash ya es el mismo (ej. al usar botón atrás)
+    // Evitar duplicar si el hash ya es el mismo
     if (window.location.hash !== `#${hash}`) {
       window.history.pushState({ step: currentStep, mode: hash }, '', `#${hash}`);
     }
-  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode]);
+  }, [currentStep, isSuccess, isPrintMode, isResultMode, isControlMode, isChecklistMode, isHistoryMode]);
 
   // 3. Listener para el botón atrás del navegador o gestos
   useEffect(() => {
@@ -210,6 +191,7 @@ function App() {
       setIsResultMode(hash === 'resultados');
       setIsControlMode(hash === 'control-resultados');
       setIsChecklistMode(hash === 'checklist');
+      setIsHistoryMode(hash === 'historial');
 
       if (hash === 'finalizado') {
         setIsSuccess(true);
@@ -228,6 +210,113 @@ function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // --------- FUNCIONES DE GESTIÓN DEL HISTORIAL DE EVENTOS ---------
+  const fetchHistorialEventos = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('eventos')
+        .select('*, peleas(*)')
+        .order('id', { ascending: false });
+      if (error) throw error;
+      if (data) setHistoryEvents(data);
+    } catch (err) {
+      console.error('Error al cargar historial:', err);
+      showAlert('No se pudo cargar el historial de eventos: ' + err.message);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const cargarEventoDesdeHistorial = (evento, modoAccion) => {
+    setFormData({
+      nombre_evento: evento.nombre_evento || '',
+      numero_evento: evento.numero_evento ? evento.numero_evento.toString() : '',
+      disciplina: evento.disciplina || '',
+      fecha: evento.fecha || hoy,
+      ciudad: evento.ciudad || ''
+    });
+
+    if (evento.logo_url === '/logo_cramm.png') {
+      setLogoMode('cramm'); setLogoUrlInput(''); setLogoFile(null);
+    } else if (evento.logo_url) {
+      setLogoMode('url'); setLogoUrlInput(evento.logo_url); setLogoFile(null);
+    } else {
+      setLogoMode('url'); setLogoUrlInput(''); setLogoFile(null);
+    }
+
+    if (evento.logo2_url === '/logo_cramm.png') {
+      setLogo2Mode('cramm'); setLogo2UrlInput(''); setLogo2File(null);
+    } else if (evento.logo2_url) {
+      setLogo2Mode('url'); setLogo2UrlInput(evento.logo2_url); setLogo2File(null);
+    } else {
+      setLogo2Mode('url'); setLogo2UrlInput(''); setLogo2File(null);
+    }
+
+    if (evento.watermark_url === '/logo_cramm.png') {
+      setWatermarkMode('cramm'); setWatermarkUrlInput(''); setWatermarkFile(null);
+    } else if (evento.watermark_url) {
+      setWatermarkMode('url'); setWatermarkUrlInput(evento.watermark_url); setWatermarkFile(null);
+    } else {
+      setWatermarkMode('url'); setWatermarkUrlInput(''); setWatermarkFile(null);
+    }
+
+    const peleasOrdenadas = [...(evento.peleas || [])].sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    const mapaCategorias = {};
+
+    peleasOrdenadas.forEach((p) => {
+      const catKey = p.tipo_pelea || 'General';
+      if (!mapaCategorias[catKey]) mapaCategorias[catKey] = [];
+      mapaCategorias[catKey].push({
+        tipo_pelea: catKey,
+        rojo_nombre: p.rojo_nombre || '',
+        rojo_apodo: p.rojo_apodo || '',
+        rojo_apellido: p.rojo_apellido || '',
+        azul_nombre: p.azul_nombre || '',
+        azul_apodo: p.azul_apodo || '',
+        azul_apellido: p.azul_apellido || ''
+      });
+    });
+
+    const reconstruidoFightForms = Object.values(mapaCategorias);
+    const reconstruidoCategorias = Object.keys(mapaCategorias).map((catName, idx) => ({
+      id: Date.now() + idx,
+      tipo: catName,
+      cant: mapaCategorias[catName].length
+    }));
+
+    setFightFormsData(reconstruidoFightForms.length > 0 ? reconstruidoFightForms : []);
+    setCategorias(reconstruidoCategorias.length > 0 ? reconstruidoCategorias : [{ id: Date.now(), tipo: '', cant: 1 }]);
+    setSavedEventId(evento.id);
+    setEditingEventId(evento.id);
+
+    setIsHistoryMode(false);
+
+    if (modoAccion === 'ver') {
+      setIsSuccess(true);
+      setCurrentStep(1);
+    } else if (modoAccion === 'editar') {
+      setIsSuccess(false);
+      setCurrentStep(1);
+    }
+  };
+
+  const eliminarEventoHistorial = (eventoId, nombreEvento) => {
+    showConfirm(`¿Estás seguro de eliminar permanentemente el evento "${nombreEvento}"? Esta acción borrará sus tarjetas y peleas asociadas.`, async () => {
+      try {
+        await cleanupEvento(eventoId);
+        if (savedEventId === eventoId) {
+          setSavedEventId(null);
+          setEditingEventId(null);
+        }
+        await fetchHistorialEventos();
+        showAlert(`Evento "${nombreEvento}" eliminado correctamente.`);
+      } catch (err) {
+        showAlert('Error al eliminar evento: ' + err.message);
+      }
+    });
+  };
 
   const fetchCiudades = async () => {
     try {
@@ -516,11 +605,21 @@ function App() {
         peleas_profesionales: 0 // Parche de retrocompatibilidad: Obligatorio para Supabase
       }
 
-      const { data: dbEventos, error: errEventos } = await supabase.from('eventos').insert([payloadEvento]).select()
-      if (errEventos) throw errEventos
-      if (!dbEventos || dbEventos.length === 0) throw new Error("No se pudo obtener el ID del evento de Supabase.")
+      let targetEventId = editingEventId;
 
-      const nuevoIdEventoGenerado = dbEventos[0].id
+      if (targetEventId) {
+        // ACTUALIZAR EVENTO EXISTENTE EN SUPABASE
+        const { error: errUpdate } = await supabase.from('eventos').update(payloadEvento).eq('id', targetEventId)
+        if (errUpdate) throw errUpdate
+        // Borrar peleas anteriores para reinsertar el nuevo conjunto de peleas
+        await supabase.from('peleas').delete().eq('evento_id', targetEventId)
+      } else {
+        // CREAR NUEVO EVENTO EN SUPABASE
+        const { data: dbEventos, error: errEventos } = await supabase.from('eventos').insert([payloadEvento]).select()
+        if (errEventos) throw errEventos
+        if (!dbEventos || dbEventos.length === 0) throw new Error("No se pudo obtener el ID del evento de Supabase.")
+        targetEventId = dbEventos[0].id
+      }
 
       // 2. Extraer TODA LA DATA de fightFormsData en un solo arreglo lineal (Flatten)
       const todasLasPeleasPayload = [];
@@ -528,7 +627,7 @@ function App() {
       fightFormsData.forEach((grupoCategoria) => {
         grupoCategoria.forEach((pelea, indexLogico) => {
           todasLasPeleasPayload.push({
-            evento_id: nuevoIdEventoGenerado,
+            evento_id: targetEventId,
             tipo_pelea: pelea.tipo_pelea, // "Amateur", "Kickboxing", "Profesional"
             orden: indexLogico + 1,       // 1, 2, 3 de su respectivo tipo
             rojo_nombre: pelea.rojo_nombre, rojo_apodo: pelea.rojo_apodo || null, rojo_apellido: pelea.rojo_apellido,
@@ -542,10 +641,10 @@ function App() {
         if (errPeleas) throw errPeleas
       }
 
-      // 3. ¡Éxito absoluto! Guardar ID para cleanup futuro y pasar a pantalla Permanente
-      setSavedEventId(nuevoIdEventoGenerado)
-      localStorage.setItem('pendingCleanupEventId', nuevoIdEventoGenerado.toString())
-      setStatus({ type: 'success', message: '¡Cartelera Subida y Procesada!' })
+      // 3. ¡Éxito absoluto! Guardar ID y pasar a pantalla Permanente
+      setSavedEventId(targetEventId)
+      setEditingEventId(targetEventId)
+      setStatus({ type: 'success', message: editingEventId ? '¡Evento Actualizado con Éxito!' : '¡Cartelera Subida y Procesada!' })
       setIsSuccess(true)
 
     } catch (err) {
@@ -583,20 +682,17 @@ function App() {
     }
   }
 
-  const resetFormulario = async () => {
-    // Limpiar datos de la base de datos del evento actual
-    if (savedEventId) {
-      await cleanupEvento(savedEventId)
-      setSavedEventId(null)
-      localStorage.removeItem('pendingCleanupEventId')
-    }
-    // Limpiar persistencia local
+  const resetFormulario = () => {
+    // Limpiar persistencia local y reiniciar formulario para un evento nuevo
+    setSavedEventId(null)
+    setEditingEventId(null)
     localStorage.removeItem('budo_app_data')
     setIsSuccess(false)
     setIsPrintMode(false)
     setIsResultMode(false)
     setIsControlMode(false)
     setIsChecklistMode(false)
+    setIsHistoryMode(false)
     setPrintDesign(1)
     setStatus({ type: '', message: '' })
     const hoy = new Date().toLocaleDateString('en-CA')
@@ -1556,12 +1652,98 @@ function App() {
     )
   }
 
+  if (isHistoryMode) {
+    return (
+      <div className="historial-wrapper bg-gray-100 min-h-screen font-sans no-print">
+        {/* Header Fijo */}
+        <div className="fixed top-0 left-0 right-0 bg-[#1a1a1a] text-white flex justify-between items-center p-3 sm:p-4 z-50 shadow-lg border-b border-red-600 px-4 sm:px-8">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-red-500 text-2xl sm:text-3xl">history</span>
+            <div>
+              <h2 className="m-0 font-black text-sm sm:text-xl tracking-widest text-white uppercase">Historial de Eventos</h2>
+              <p className="m-0 text-[10px] sm:text-xs text-gray-400 font-medium hidden sm:block">Eventos guardados en la base de datos Supabase</p>
+            </div>
+          </div>
+          <button onClick={() => setIsHistoryMode(false)} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-xs sm:text-sm font-bold text-white transition-colors cursor-pointer border-none flex items-center gap-1">
+            ← Volver al Generador
+          </button>
+        </div>
+
+        {/* Contenido Principal */}
+        <div className="pt-24 pb-12 px-4 sm:px-8 max-w-[1000px] mx-auto">
+          <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm border border-gray-200 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="m-0 text-base sm:text-lg font-bold text-[#111] uppercase">Eventos Almacenados ({historyEvents.length})</h3>
+              <p className="m-0 text-xs text-gray-500 mt-1">Selecciona un evento para reimprimir sus tarjetas, editar su información o eliminarlo.</p>
+            </div>
+            <button onClick={fetchHistorialEventos} className="bg-gray-100 hover:bg-gray-200 text-[#333] border border-gray-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0">
+              <span className="material-symbols-outlined text-sm">refresh</span> Actualizar Lista
+            </button>
+          </div>
+
+          {isLoadingHistory ? (
+            <div className="bg-white p-12 rounded-lg text-center shadow-sm border border-gray-200">
+              <div className="text-gray-500 font-bold text-sm">Cargando historial desde la base de datos...</div>
+            </div>
+          ) : historyEvents.length === 0 ? (
+            <div className="bg-white p-12 rounded-lg text-center shadow-sm border border-gray-200">
+              <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">folder_off</span>
+              <div className="text-gray-700 font-bold text-base mb-1">No hay eventos guardados aún</div>
+              <p className="text-xs text-gray-400 max-w-xs mx-auto mb-4">Crea un evento nuevo y finaliza el registro para que aparezca en tu historial.</p>
+              <button onClick={() => setIsHistoryMode(false)} className="bg-[#b91d22] text-white px-5 py-2.5 rounded text-xs font-bold uppercase cursor-pointer border-none shadow-sm">
+                Crear Primer Evento
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {historyEvents.map((ev) => {
+                const totalPeleas = ev.peleas ? ev.peleas.length : 0;
+                return (
+                  <div key={`hist-ev-${ev.id}`} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="font-black text-base sm:text-lg text-[#111] uppercase tracking-wide">{ev.nombre_evento} {ev.numero_evento ? `#${ev.numero_evento}` : ''}</span>
+                        {ev.disciplina && <span className="bg-red-100 text-[#b91d22] text-[10px] font-black px-2.5 py-0.5 rounded uppercase border border-red-200">{ev.disciplina}</span>}
+                        <span className="bg-gray-100 text-gray-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase border border-gray-200">{totalPeleas} {totalPeleas === 1 ? 'combate' : 'combates'}</span>
+                      </div>
+                      <div className="text-xs text-gray-600 flex items-center gap-4 flex-wrap font-medium">
+                        <span>📅 {formatFriendlyDate(ev.fecha)}</span>
+                        <span>📍 {ev.ciudad || 'Sin Sede'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                      <button onClick={() => cargarEventoDesdeHistorial(ev, 'ver')} className="bg-[#3a475a] hover:bg-[#2a3442] text-white px-4 py-2.5 rounded text-xs font-bold uppercase flex items-center gap-1.5 cursor-pointer border-none transition-colors shadow-sm">
+                        <span className="material-symbols-outlined text-sm">print</span> Reimprimir / Ver
+                      </button>
+                      <button onClick={() => cargarEventoDesdeHistorial(ev, 'editar')} className="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2.5 rounded text-xs font-bold uppercase flex items-center gap-1.5 cursor-pointer border-none transition-colors shadow-sm">
+                        <span className="material-symbols-outlined text-sm">edit</span> Editar
+                      </button>
+                      <button onClick={() => eliminarEventoHistorial(ev.id, ev.nombre_evento)} className="bg-white hover:bg-red-50 text-red-600 border border-red-200 px-3 py-2.5 rounded text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-sm" title="Eliminar Evento">
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // --- RENDER PRINCIPAL APP ---
   return (
     <div className="flex justify-center items-start min-h-screen pt-0 sm:pt-10 pb-0 sm:pb-10 bg-[#eef1f5] no-print">
       <div className={`w-full bg-white rounded-none sm:rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden font-sans transition-all duration-300 ${currentStep === 1 ? 'max-w-[700px]' : 'max-w-[850px]'}`}>
 
-        <div className={currentStep === 1 ? "bg-[#b91d22] text-white text-center py-6 px-5" : "bg-[#6c7b95] text-white text-center py-5 px-5"}>
+        <div className={currentStep === 1 ? "bg-[#b91d22] text-white text-center py-6 px-5 relative" : "bg-[#6c7b95] text-white text-center py-5 px-5 relative"}>
+          {currentStep === 1 && (
+            <button type="button" onClick={() => { fetchHistorialEventos(); setIsHistoryMode(true); }} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white border border-white/30 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm">
+              <span className="material-symbols-outlined text-sm">history</span> <span className="hidden sm:inline">HISTORIAL</span>
+            </button>
+          )}
           <h1 className="m-0 text-[26px] font-bold tracking-wide">Generador de Tarjetas</h1>
           <p className="mt-2 text-sm opacity-90 font-medium tracking-wide shadow-sm">
             {extractTopBarHelpText()}
@@ -1594,6 +1776,9 @@ function App() {
               </button>
               <button type="button" onClick={() => setIsChecklistMode(true)} className="w-full bg-[#2d6a4f] hover:bg-[#1b4332] border-none text-white py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors shadow-[0_4px_0_#1b4332] active:translate-y-1 active:shadow-none cursor-pointer">
                 <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">checklist</span> Generar Lista de Chequeo</div>
+              </button>
+              <button type="button" onClick={() => { fetchHistorialEventos(); setIsHistoryMode(true); }} className="w-full bg-[#4a5568] hover:bg-[#323c4d] border-none text-white py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors shadow-sm cursor-pointer">
+                <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">history</span> Ver Historial de Eventos</div>
               </button>
               <button type="button" onClick={resetFormulario} className="w-full bg-white border border-[#ccc] hover:bg-gray-50 text-[#333] py-4 font-bold rounded-md uppercase tracking-wider text-[13px] transition-colors cursor-pointer">
                 <div className="flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">add</span> Crear un Evento Nuevo</div>
